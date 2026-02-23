@@ -13,10 +13,18 @@ const SensorDataSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    soilMoisture: {
+        type: Number,
+        required: true
+    },
+    cropType: {
+        type: String,
+        default: 'General'
+    },
     createdAt: {
         type: Date,
         default: Date.now,
-        index: true // Key for performant history queries
+        index: true
     }
 });
 

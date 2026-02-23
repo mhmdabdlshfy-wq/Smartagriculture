@@ -3,11 +3,16 @@ const mongoose = require('mongoose');
 const AlertSchema = new mongoose.Schema({
     type: {
         type: String,
-        required: true // 'temperature', 'humidity', 'ph'
+        required: true // 'temperature', 'humidity', 'ph', 'soilMoisture', 'system', 'irrigation', 'disease'
+    },
+    severity: {
+        type: String,
+        enum: ['Critical', 'Warning', 'Info'],
+        default: 'Warning'
     },
     value: {
         type: Number,
-        required: true
+        required: false
     },
     message: {
         type: String,

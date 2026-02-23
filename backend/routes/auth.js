@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
         const user = await User.create({
             username,
             password, // Mongoose pre-save hook handles hashing
-            role: 'user'
+            role: 'farmer'
         });
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });

@@ -1,181 +1,114 @@
-import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
-import api from '../services/api';
+import React from 'react';
+import { useSensor } from '../context/SensorContext';
 import SensorCard from '../components/SensorCard';
+import IrrigationPanel from '../components/IrrigationPanel';
 import LiveChart from '../components/LiveChart';
+import HealthGauge from '../components/HealthGauge';
+import RiskPanel from '../components/RiskPanel';
+import AnomalyBanner from '../components/AnomalyBanner';
 import AlertPopup from '../components/AlertPopup';
+import useIntelligence from '../hooks/useIntelligence';
 
 const Dashboard = () => {
-    const [sensors, setSensors] = useState({
-        temperature: { value: 0, status: 'normal' },
-        humidity: { value: 0, status: 'normal' },
-        ph: { value: 0, status: 'normal' }
-    });
-    const [history, setHistory] = useState({
-        temperature: [],
-        humidity: [],
-        ph: []
-    });
-    const [labels, setLabels] = useState([]);
-    const [lastUpdated, setLastUpdated] = useState(null);
-    const [alert, setAlert] = useState(null);
-    const [timeRange, setTimeRange] = useState('24h');
+    const { sensorData, loading, alerts, activeCrop } = useSensor();
+    const { health, risks, predictions, anomalies } = useIntelligence(activeCrop);
+    const [currentAlert, setCurrentAlert] = React.useState(null);
+    const [timeRange, setTimeRange] = React.useState('24h');
+    const [chartData, setChartData] = React.useState([]);
 
-    // Status Logic (Duplicated from backend for immediate UI feedback, or just trust backend alerts)
-    // Here we determine status for card visualization locally
+    // Show popup when new alert arrives
+    React.useEffect(() => {
+        if (alerts.length > 0) {
+            setCurrentAlert(alerts[0]);
+        }
+    }, [alerts]);
+
+    // Fetch History when range changes
+    React.useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const { data } = await import('../services/api').then(m => m.default.get(`/sensors/history?range=${timeRange}`));
+                setChartData(data);
+            } catch (err) {
+                console.error("Failed to fetch history", err);
+            }
+        };
+        fetchHistory();
+    }, [timeRange]);
+
+    // Format labels based on range
+    const getLabels = () => {
+        return chartData.map(d => {
+            const date = new Date(d.createdAt);
+            if (timeRange === '24h') return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (timeRange === '7d' || timeRange === '1m') return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        });
+    };
+
+    const labels = getLabels();
+
+    // Get prediction data for chart overlay
+    const getPredictionData = (metric) => {
+        if (!predictions || !predictions[metric]) return null;
+        const pred = predictions[metric];
+        return {
+            values: pred.predictions.map(p => p.value),
+            labels: pred.predictions.map(p => new Date(p.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
+            confidence: pred.confidence,
+            trend: pred.trend
+        };
+    };
+
     const getStatus = (type, value) => {
-        if (type === 'temperature') {
-            if (value > 40) return 'critical';
-            if (value > 30) return 'warning';
-            return 'normal';
-        }
-        if (type === 'humidity') {
-            if (value < 20) return 'critical';
-            if (value < 40) return 'warning';
-            return 'normal';
-        }
-        if (type === 'ph') {
-            if (value < 5 || value > 8) return 'critical';
-            if (value < 6 || value > 7.5) return 'warning';
-            return 'normal';
-        }
+        if (!value) return 'normal';
+        if (type === 'temperature') return value > 35 ? 'critical' : value > 28 ? 'warning' : 'normal';
+        if (type === 'humidity') return value < 30 ? 'warning' : value > 90 ? 'warning' : 'normal';
+        if (type === 'ph') return value < 5.5 || value > 7.5 ? 'warning' : 'normal';
+        if (type === 'soilMoisture') return value < 30 ? 'critical' : value < 40 ? 'warning' : 'normal';
         return 'normal';
     };
 
-    // Helper to downsample data for cleaner charts
-    const processChartData = (data, range) => {
-        if (!data || data.length === 0) return { temperature: [], humidity: [], ph: [], labels: [] };
+    if (loading || !sensorData) {
+        return (
+            <div className="space-y-6 pb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="card p-6 animate-pulse">
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
+                            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
-        // For 1h, show raw data (high detail)
-        if (range === '1h') {
-            const limit = 720; // Last hour approx
-            const sliced = data.slice(-limit);
-            return {
-                temperature: sliced.map(d => d.temperature),
-                humidity: sliced.map(d => d.humidity),
-                ph: sliced.map(d => d.ph),
-                labels: sliced.map(d => new Date(d.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }))
-            };
-        }
-
-        // For 24h+, aggregate into buckets
-        const bucketSizeMinutes = range === '24h' ? 15 : 120; // 15 min or 2 hour buckets
-        const buckets = {};
-
-        data.forEach(d => {
-            const date = new Date(d.createdAt);
-            // Round down to nearest bucket
-            const coeff = 1000 * 60 * bucketSizeMinutes;
-            const bucketTime = new Date(Math.floor(date.getTime() / coeff) * coeff);
-            const key = bucketTime.toISOString();
-
-            if (!buckets[key]) buckets[key] = { temp: [], hum: [], ph: [], count: 0, time: bucketTime };
-            buckets[key].temp.push(d.temperature);
-            buckets[key].hum.push(d.humidity);
-            buckets[key].ph.push(d.ph);
-            buckets[key].count++;
-        });
-
-        const sortedKeys = Object.keys(buckets).sort();
-        const average = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
-
-        const labels = [];
-        const temperature = [];
-        const humidity = [];
-        const ph = [];
-
-        sortedKeys.forEach(key => {
-            const b = buckets[key];
-            const date = b.time;
-            // Format label with AM/PM
-            let label;
-            if (range === '24h') {
-                label = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            } else {
-                // 7d view
-                label = `${date.getMonth() + 1}/${date.getDate()} ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
-            }
-
-            labels.push(label);
-            temperature.push(parseFloat(average(b.temp).toFixed(1)));
-            humidity.push(parseFloat(average(b.hum).toFixed(1)));
-            ph.push(parseFloat(average(b.ph).toFixed(1)));
-        });
-
-        return { labels, temperature, humidity, ph };
-    };
-
-    // Keep essentially all raw data in memory to re-process on range switch
-    // Note: In a real app, we'd fetch aggregated data from backend.
-    // Here we simulate it by storing "allHistory" locally.
-    const [allHistory, setAllHistory] = useState([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Always fetch broad range to populate local cache, then slice view
-                const { data } = await api.get('/sensors/history?range=7d');
-                setAllHistory(data);
-
-                if (data.length > 0) {
-                    updateCurrentState(data[data.length - 1]);
-                }
-            } catch (err) {
-                console.error('Failed to fetch history', err);
-            }
-        };
-
-        fetchData();
-
-        const socket = io('http://localhost:5000');
-        socket.on('sensorUpdate', (data) => {
-            updateCurrentState(data);
-            setAllHistory(prev => {
-                const newData = [...prev, data];
-                // Keep max 20k points in memory
-                if (newData.length > 20000) return newData.slice(-20000);
-                return newData;
-            });
-        });
-        socket.on('newAlert', (newAlert) => setAlert(newAlert));
-
-        return () => socket.disconnect();
-    }, []);
-
-    // Re-process chart data whenever history or timeRange changes
-    useEffect(() => {
-        const processed = processChartData(allHistory, timeRange);
-        setLabels(processed.labels);
-        setHistory({
-            temperature: processed.temperature,
-            humidity: processed.humidity,
-            ph: processed.ph
-        });
-    }, [allHistory, timeRange]);
-
-    const updateCurrentState = (data) => {
-        setLastUpdated(data.createdAt || new Date());
-        setSensors({
-            temperature: { value: data.temperature, status: getStatus('temperature', data.temperature) },
-            humidity: { value: data.humidity, status: getStatus('humidity', data.humidity) },
-            ph: { value: data.ph, status: getStatus('ph', data.ph) }
-        });
-    };
+    const ranges = ['24h', '7d', '1m', '6m', '1y'];
 
     return (
-        <div className="space-y-8 animate-fade-in pb-10">
-            <AlertPopup alert={alert} onClose={() => setAlert(null)} />
+        <div className="space-y-6 pb-12 animate-fade-in">
+            {/* Alert Popup */}
+            <AlertPopup alert={currentAlert} onClose={() => setCurrentAlert(null)} />
 
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
-                <div className="bg-white p-1 rounded-lg shadow-sm border border-gray-200">
-                    {['1h', '24h', '7d'].map((range) => (
+            {/* Anomaly Detection Banner */}
+            <AnomalyBanner anomalies={anomalies} />
+
+            {/* Time Range Controls */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">Farm Overview</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Real-time monitoring & intelligence</p>
+                </div>
+                <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    {ranges.map(range => (
                         <button
                             key={range}
                             onClick={() => setTimeRange(range)}
-                            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${timeRange === range
-                                ? 'bg-green-600 text-white shadow-sm'
-                                : 'text-gray-600 hover:bg-gray-100'
+                            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${timeRange === range
+                                ? 'bg-white dark:bg-gray-600 text-primary shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
                                 }`}
                         >
                             {range}
@@ -184,54 +117,92 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <SensorCard
-                    type="temperature"
-                    value={sensors.temperature.value}
-                    status={sensors.temperature.status}
-                    lastUpdated={lastUpdated}
-                />
-                <SensorCard
-                    type="humidity"
-                    value={sensors.humidity.value}
-                    status={sensors.humidity.status}
-                    lastUpdated={lastUpdated}
-                />
-                <SensorCard
-                    type="ph"
-                    value={sensors.ph.value}
-                    status={sensors.ph.status}
-                    lastUpdated={lastUpdated}
-                />
+            {/* Top Row: Sensor Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <SensorCard type="temperature" value={sensorData.temperature} status={getStatus('temperature', sensorData.temperature)} lastUpdated={sensorData.createdAt} />
+                <SensorCard type="humidity" value={sensorData.humidity} status={getStatus('humidity', sensorData.humidity)} lastUpdated={sensorData.createdAt} />
+                <SensorCard type="ph" value={sensorData.ph} status={getStatus('ph', sensorData.ph)} lastUpdated={sensorData.createdAt} />
+                <SensorCard type="soilMoisture" value={sensorData.soilMoisture} status={getStatus('soilMoisture', sensorData.soilMoisture)} lastUpdated={sensorData.createdAt} />
             </div>
 
-            <div className="flex flex-col gap-8">
-                <div className="card h-96 w-full">
+            {/* Intelligence Row: Health + Risks */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <HealthGauge health={health} activeCrop={activeCrop} />
+                <RiskPanel risks={risks} />
+                <IrrigationPanel />
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="card h-80">
                     <LiveChart
-                        title="Temperature History (°C)"
-                        data={history.temperature}
+                        title={`Temperature (${timeRange})`}
+                        data={chartData.map(d => d.temperature)}
                         labels={labels}
                         color="#ef4444"
                         min={0} max={60}
+                        prediction={timeRange === '24h' ? getPredictionData('temperature') : null}
                     />
                 </div>
-                <div className="card h-96 w-full">
+                <div className="card h-80">
                     <LiveChart
-                        title="Humidity History (%)"
-                        data={history.humidity}
+                        title={`Humidity (${timeRange})`}
+                        data={chartData.map(d => d.humidity)}
                         labels={labels}
                         color="#3b82f6"
                         min={0} max={100}
+                        prediction={timeRange === '24h' ? getPredictionData('humidity') : null}
                     />
                 </div>
-                <div className="card h-96 w-full">
+                <div className="card h-80">
                     <LiveChart
-                        title="Soil pH Level"
-                        data={history.ph}
+                        title={`Soil pH (${timeRange})`}
+                        data={chartData.map(d => d.ph)}
                         labels={labels}
                         color="#8b5cf6"
-                        min={0} max={14}
+                        min={4} max={9}
                     />
+                </div>
+                <div className="card h-80">
+                    <LiveChart
+                        title={`Soil Moisture (${timeRange})`}
+                        data={chartData.map(d => d.soilMoisture)}
+                        labels={labels}
+                        color="#10b981"
+                        min={0} max={100}
+                        prediction={timeRange === '24h' ? getPredictionData('soilMoisture') : null}
+                    />
+                </div>
+            </div>
+
+            {/* Recent Alerts Log */}
+            <div className="card overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">Recent Alerts</h3>
+                    <span className="text-xs font-medium text-gray-400">{alerts.length} alerts</span>
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-72 overflow-y-auto">
+                    {alerts.length === 0 ? (
+                        <p className="p-6 text-gray-500 text-sm text-center">No recent alerts. All systems nominal.</p>
+                    ) : (
+                        alerts.map((alert, idx) => (
+                            <div key={idx} className="px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${alert.severity === 'Critical' ? 'bg-red-500' :
+                                            alert.severity === 'Warning' ? 'bg-orange-400' : 'bg-blue-400'
+                                        }`} />
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{alert.message}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.severity === 'Critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                            alert.severity === 'Warning' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                        }`}>{alert.severity}</span>
+                                    <span className="text-xs text-gray-400 w-16 text-right">{new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
