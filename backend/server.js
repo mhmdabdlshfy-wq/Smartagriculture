@@ -35,7 +35,8 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/smart-agri'
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/sensors', require('./routes/sensors'));
-app.use('/api/admin', require('./routes/admin'));
+app.use('/api/collab', require('./routes/tasks'));
+app.use('/api/collab', require('./routes/messages'));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

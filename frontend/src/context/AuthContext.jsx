@@ -10,8 +10,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            // Decode token or fetch user profile (Mocking user from local storage for now if simple)
-            // Ideally we verify token with backend. For MVP, we trust token existence + user data in localStorage
             const userData = JSON.parse(localStorage.getItem('user'));
             if (userData) setUser(userData);
         }
@@ -23,13 +21,15 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
+        return data.user;
     };
 
-    const register = async (username, password) => {
-        const { data } = await api.post('/auth/register', { username, password });
+    const register = async (username, password, role, fullName) => {
+        const { data } = await api.post('/auth/register', { username, password, role, fullName });
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
+        return data.user;
     };
 
     const logout = () => {

@@ -18,6 +18,11 @@ const AlertSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    // Which crop this alert was generated for
+    cropType: {
+        type: String,
+        default: ''
+    },
     resolved: {
         type: Boolean,
         default: false

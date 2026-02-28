@@ -3,27 +3,32 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Seed Default Admin (admin / 1234)
+// Seed Default Accounts
 (async () => {
     try {
-        const adminExists = await User.findOne({ username: 'admin' });
-        if (!adminExists) {
-            await User.create({
-                username: 'admin',
-                password: '1234', // Pre-save hook will hash this
-                role: 'admin'
-            });
-            console.log('Default Admin Created: admin / 1234');
+        const engExists = await User.findOne({ username: 'engineer1' });
+        if (!engExists) {
+            await User.create({ username: 'engineer1', password: '1234', role: 'engineer', fullName: 'Dr. Ahmed (Engineer)' });
+            console.log('✅ Default Engineer Created: engineer1 / 1234');
+        }
+
+        const farmerExists = await User.findOne({ username: 'farmer1' });
+        if (!farmerExists) {
+            await User.create({ username: 'farmer1', password: '1234', role: 'farmer', fullName: 'Hassan (Farmer)' });
+            console.log('✅ Default Farmer Created: farmer1 / 1234');
         }
     } catch (err) {
-        console.error('Admin Seed Error:', err);
+        console.error('Seed Error:', err);
     }
 })();
 
-// Register
+// Register (with role selection)
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ message: 'All fields are required' });
+    const { username, password, role, fullName } = req.body;
+    if (!username || !password) return res.status(400).json({ message: 'Username and password are required' });
+
+    const allowedRoles = ['farmer', 'engineer'];
+    const userRole = allowedRoles.includes(role) ? role : 'farmer';
 
     try {
         const existingUser = await User.findOne({ username });
@@ -31,12 +36,16 @@ router.post('/register', async (req, res) => {
 
         const user = await User.create({
             username,
-            password, // Mongoose pre-save hook handles hashing
-            role: 'farmer'
+            password,
+            role: userRole,
+            fullName: fullName || username
         });
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token, user: { id: user._id, username: user.username, role: user.role } });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        res.json({
+            token,
+            user: { id: user._id, username: user.username, role: user.role, fullName: user.fullName }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });
@@ -46,36 +55,51 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    console.log(`📡 LOGIN ATTEMPT: Username=${username}, Password=${password}`);
-
-    if (!username || !password) {
-        console.log('❌ Missing fields');
-        return res.status(400).json({ message: 'All fields are required' });
-    }
+    if (!username || !password) return res.status(400).json({ message: 'All fields are required' });
 
     try {
         const user = await User.findOne({ username });
-        if (!user) {
-            console.log('❌ User not found in DB');
-            // Try to dump all users for debug
-            const allUsers = await User.find({}, 'username');
-            console.log('   Users in DB:', allUsers.map(u => u.username));
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
+        if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-        console.log(`✅ User found: ${user.username}, Role: ${user.role}`);
         const isMatch = await user.matchPassword(password);
+        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-        if (!isMatch) {
-            console.log('❌ Password mismatch');
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-
-        console.log('✅ Password matched! Generating token...');
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token, user: { id: user._id, username: user.username, role: user.role } });
+        console.log(`✅ Login: ${user.username} (${user.role})`);
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        res.json({
+            token,
+            user: { id: user._id, username: user.username, role: user.role, fullName: user.fullName }
+        });
     } catch (err) {
-        console.error('❌ LOGIN SERVER ERROR:', err);
+        console.error('Login Error:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// Get current user
+router.get('/me', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ message: 'No token' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.json({ id: user._id, username: user.username, role: user.role, fullName: user.fullName });
+    } catch (err) {
+        res.status(401).json({ message: 'Invalid token' });
+    }
+});
+
+// Get users list (for task assignment)
+router.get('/users', async (req, res) => {
+    try {
+        const { role } = req.query;
+        const filter = role ? { role } : {};
+        const users = await User.find(filter).select('-password').sort({ username: 1 });
+        res.json(users);
+    } catch (err) {
         res.status(500).json({ message: 'Server Error' });
     }
 });

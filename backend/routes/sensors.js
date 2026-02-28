@@ -101,12 +101,20 @@ router.get('/history', async (req, res) => {
 });
 
 // ──────────────────────────────────────────────
-// GET /alerts - Recent alerts
+// GET /alerts - Recent alerts (filtered by crop if specified)
 // ──────────────────────────────────────────────
 router.get('/alerts', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20;
-        const alerts = await Alert.find().sort({ createdAt: -1 }).limit(limit);
+        const { crop } = req.query;
+
+        // Build filter: if crop is specified, only show alerts for that crop
+        const filter = {};
+        if (crop) {
+            filter.cropType = crop;
+        }
+
+        const alerts = await Alert.find(filter).sort({ createdAt: -1 }).limit(limit);
         res.json(alerts);
     } catch (err) {
         console.error(err);

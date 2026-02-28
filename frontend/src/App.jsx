@@ -4,11 +4,12 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SensorProvider } from './context/SensorContext';
 import { ToastProvider } from './context/ToastContext';
 import Header from './components/Header';
+import MessagePanel from './components/MessagePanel';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import InsightsPage from './pages/InsightsPage';
-import AdminPanel from './pages/AdminPanel';
+import CropPage from './pages/CropPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -28,6 +29,7 @@ const ProtectedRoute = ({ children }) => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {children}
       </main>
+      <MessagePanel />
     </>
   );
 };
@@ -55,9 +57,9 @@ const App = () => {
                   </ProtectedRoute>
                 } />
 
-                <Route path="/admin" element={
+                <Route path="/crop/:cropName" element={
                   <ProtectedRoute>
-                    <AdminPanel />
+                    <CropPage />
                   </ProtectedRoute>
                 } />
               </Routes>

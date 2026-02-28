@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useRef } from 'react';
 import io from 'socket.io-client';
 import api from '../services/api';
 
@@ -22,19 +22,18 @@ export const SensorProvider = ({ children }) => {
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [socket, setSocket] = useState(null);
+    // Keep a ref to activeCrop so the socket listener can access the latest value
+    const activeCropRef = useRef(activeCrop);
 
+    // Socket connection + sensor data (runs once)
     useEffect(() => {
         const newSocket = io('http://localhost:5000');
         setSocket(newSocket);
 
-        const fetchData = async () => {
+        const fetchSensorData = async () => {
             try {
-                const [curRes, alertRes] = await Promise.all([
-                    api.get('/sensors/current'),
-                    api.get('/sensors/alerts')
-                ]);
+                const curRes = await api.get('/sensors/current');
                 if (curRes.data) setSensorData(curRes.data);
-                if (alertRes.data) setAlerts(alertRes.data);
                 setLoading(false);
             } catch (err) {
                 console.error("Failed to fetch initial sensor data", err);
@@ -42,7 +41,7 @@ export const SensorProvider = ({ children }) => {
             }
         };
 
-        fetchData();
+        fetchSensorData();
 
         newSocket.on('sensorUpdate', (data) => {
             setSensorData(data);
@@ -53,12 +52,32 @@ export const SensorProvider = ({ children }) => {
             });
         });
 
+        // Filter incoming alerts: only show if cropType matches active crop
         newSocket.on('newAlert', (alert) => {
-            setAlerts(prev => [alert, ...prev].slice(0, 20));
+            const currentCrop = activeCropRef.current;
+            if (!alert.cropType || alert.cropType === currentCrop) {
+                setAlerts(prev => [alert, ...prev].slice(0, 20));
+            }
         });
 
         return () => newSocket.close();
     }, []);
+
+    // Fetch alerts filtered by active crop (runs on crop change)
+    useEffect(() => {
+        activeCropRef.current = activeCrop;
+
+        const fetchAlerts = async () => {
+            try {
+                const alertRes = await api.get(`/sensors/alerts?crop=${activeCrop}`);
+                if (alertRes.data) setAlerts(alertRes.data);
+            } catch (err) {
+                console.error("Failed to fetch alerts for crop", err);
+            }
+        };
+
+        fetchAlerts();
+    }, [activeCrop]);
 
     const setActiveCrop = async (crop) => {
         if (CROPS[crop]) {
