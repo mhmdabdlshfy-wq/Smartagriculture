@@ -27,7 +27,7 @@ export const SensorProvider = ({ children }) => {
 
     // Socket connection + sensor data (runs once)
     useEffect(() => {
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io(window.location.origin);
         setSocket(newSocket);
 
         const fetchSensorData = async () => {

@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
@@ -37,6 +37,15 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/sensors', require('./routes/sensors'));
 app.use('/api/collab', require('./routes/tasks'));
 app.use('/api/collab', require('./routes/messages'));
+
+// Serve Frontend (production build)
+const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(frontendBuildPath));
+
+// Catch-all: send index.html for any non-API route (React SPA routing)
+app.get('/{*splat}', (req, res) => {
+    res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

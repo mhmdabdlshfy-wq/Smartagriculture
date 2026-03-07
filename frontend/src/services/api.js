@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api', // Hardcoded for simplicity, usually from env
+    baseURL: '/api', // Relative URL - works from any origin
 });
 
 // Add token to requests
