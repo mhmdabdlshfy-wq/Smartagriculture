@@ -66,6 +66,13 @@ const en = {
         engineerDesc: 'Monitor, analyze & create recommendations',
         farmerRole: 'Farmer',
         farmerDesc: 'View tasks, execute & send feedback',
+        backendErrors: {
+            'Username and password are required': 'Username and password are required',
+            'User already exists': 'User already exists',
+            'All fields are required': 'All fields are required',
+            'Invalid credentials': 'Invalid credentials',
+            'Network Error': 'Server is down or unreachable. Please check your connection.',
+        }
     },
 
     // ── Sensors ──
@@ -135,6 +142,42 @@ const en = {
         currentSensorReadings: '📊 Current Sensor Readings (will be attached)',
         sendRecommendation: '📨 Send Recommendation',
         acknowledged: 'acknowledged',
+        // Labels for task display
+        byLabel: 'By',
+        toLabel: 'To',
+        fromLabel: 'From',
+        unassigned: 'Unassigned',
+        dueLabel: 'Due',
+        selectedFarmer: 'Selected Farmer',
+        recForCrop: 'Recommendation for crop',
+        // Task status labels
+        statusLabels: {
+            pending: 'Pending',
+            in_progress: 'In Progress',
+            completed: 'Completed',
+            cancelled: 'Cancelled',
+        },
+        // Priority labels
+        priorityLabels: {
+            low: 'Low',
+            medium: 'Medium',
+            high: 'High',
+            urgent: 'Urgent',
+        },
+        // Category labels
+        categoryLabels: {
+            irrigation: 'Irrigation',
+            fertilizer: 'Fertilizer',
+            pest_control: 'Pest Control',
+            harvesting: 'Harvesting',
+            soil: 'Soil Management',
+            general: 'General',
+        },
+        // Rec form
+        recTitle: 'Title',
+        recDetails: 'Details',
+        recTitlePlaceholder: 'e.g. Increase irrigation frequency',
+        recDetailsPlaceholder: 'Explain what should be done and why...',
     },
 
     // ── Farmer Dashboard ──
@@ -297,6 +340,12 @@ const en = {
         diseaseRisk: 'Disease Risk',
         heatStress: 'Heat Stress',
         waterStress: 'Water Stress',
+        riskLevels: {
+            Critical: 'Critical',
+            High: 'High',
+            Moderate: 'Moderate',
+            Low: 'Low',
+        },
     },
 
     // ── Health Gauge ──
@@ -370,6 +419,7 @@ const en = {
         dataManagementDesc: 'Export sensor data or clear old records.',
         exportCSV: 'Export CSV',
         clearLogs: 'Clear Logs > 30 Days',
+        exportPending: 'Export feature pending implementation',
     },
 
     // ── LiveChart ──

@@ -35,7 +35,7 @@ const AnomalyBanner = ({ anomalies }) => {
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{a.message}</p>
                             <p className="text-xs text-gray-400 mt-0.5">
-                                {t.alerts.anomalyTypes[a.type] || a.type.toUpperCase()} • {a.metric}
+                                {t.alerts.anomalyTypes[a.type] || a.type.toUpperCase()} • {t.sensors[a.metric] || a.metric}
                             </p>
                         </div>
                         <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-bold ${a.severity === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'

@@ -70,7 +70,7 @@ const AdminPanel = () => {
                 <h3 className="font-bold text-lg mb-4">{t.adminPanel.dataManagement}</h3>
                 <p className="text-gray-600 mb-4">{t.adminPanel.dataManagementDesc}</p>
                 <div className="flex gap-4">
-                    <button className="btn btn-primary" onClick={() => alert('Export feature pending implementation')}>{t.adminPanel.exportCSV}</button>
+                    <button className="btn btn-primary" onClick={() => alert(t.adminPanel.exportPending)}>{t.adminPanel.exportCSV}</button>
                     <button className="btn btn-outline text-red-600 border-red-200 hover:bg-red-50">{t.adminPanel.clearLogs}</button>
                 </div>
             </div>

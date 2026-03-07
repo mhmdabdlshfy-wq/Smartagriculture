@@ -21,7 +21,8 @@ const Login = () => {
             await login(username, password);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || t.auth.loginFailed);
+            const backendMsg = err.response?.data?.message || err.message;
+            setError(t.auth.backendErrors?.[backendMsg] || backendMsg || t.auth.loginFailed);
         } finally {
             setIsLoading(false);
         }

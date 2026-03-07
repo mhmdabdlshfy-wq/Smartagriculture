@@ -137,7 +137,7 @@ const AdminDashboard = () => {
                                 <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{alert.message}</p>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.severity === 'Critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : alert.severity === 'Warning' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>{alert.severity}</span>
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.severity === 'Critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : alert.severity === 'Warning' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>{t.alerts.severityLevels[alert.severity] || alert.severity}</span>
                                 <span className="text-xs text-gray-400 w-16 text-right">{new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                         </div>

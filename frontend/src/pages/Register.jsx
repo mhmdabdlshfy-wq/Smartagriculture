@@ -21,7 +21,8 @@ const Register = () => {
             await register(username, password, role, fullName);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || t.auth.registrationFailed);
+            const backendMsg = err.response?.data?.message || err.message;
+            setError(t.auth.backendErrors?.[backendMsg] || backendMsg || t.auth.registrationFailed);
         }
     };
 

@@ -41,7 +41,7 @@ const RiskPanel = ({ risks }) => {
                     </h3>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${overallColor[risks.overall] || overallColor.Low}`}>
-                    {risks.overall}
+                    {t.riskPanel.riskLevels[risks.overall] || risks.overall}
                 </span>
             </div>
 

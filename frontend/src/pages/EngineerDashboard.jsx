@@ -251,18 +251,18 @@ const EngineerDashboard = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="card h-80">
-                    <LiveChart title={`Temperature (${timeRange})`} data={chartData.map(d => d.temperature)} labels={labels} color="#ef4444" min={0} max={60}
+                    <LiveChart title={`${t.sensors.temperature} (${timeRange})`} data={chartData.map(d => d.temperature)} labels={labels} color="#ef4444" min={0} max={60}
                         prediction={timeRange === '24h' ? getPredictionData('temperature') : null} />
                 </div>
                 <div className="card h-80">
-                    <LiveChart title={`Humidity (${timeRange})`} data={chartData.map(d => d.humidity)} labels={labels} color="#3b82f6" min={0} max={100}
+                    <LiveChart title={`${t.sensors.humidity} (${timeRange})`} data={chartData.map(d => d.humidity)} labels={labels} color="#3b82f6" min={0} max={100}
                         prediction={timeRange === '24h' ? getPredictionData('humidity') : null} />
                 </div>
                 <div className="card h-80">
-                    <LiveChart title={`Soil pH (${timeRange})`} data={chartData.map(d => d.ph)} labels={labels} color="#8b5cf6" min={4} max={9} />
+                    <LiveChart title={`${t.sensors.ph} (${timeRange})`} data={chartData.map(d => d.ph)} labels={labels} color="#8b5cf6" min={4} max={9} />
                 </div>
                 <div className="card h-80">
-                    <LiveChart title={`Soil Moisture (${timeRange})`} data={chartData.map(d => d.soilMoisture)} labels={labels} color="#10b981" min={0} max={100}
+                    <LiveChart title={`${t.sensors.soilMoisture} (${timeRange})`} data={chartData.map(d => d.soilMoisture)} labels={labels} color="#10b981" min={0} max={100}
                         prediction={timeRange === '24h' ? getPredictionData('soilMoisture') : null} />
                 </div>
             </div>
@@ -290,14 +290,14 @@ const EngineerDashboard = () => {
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 mt-1">
                                             <span className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
-                                                🔧 By: {task.createdBy?.fullName || task.createdBy?.username || user?.fullName || 'Engineer'}
+                                                🔧 {t.engineer.byLabel}: {task.createdBy?.fullName || task.createdBy?.username || user?.fullName || t.roles.engineer}
                                             </span>
                                             <span className="text-gray-300 dark:text-gray-600 text-xs">→</span>
                                             <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full">
-                                                🌱 To: {task.assignedTo?.fullName || task.assignedTo?.username || 'Unassigned'}
+                                                🌱 {t.engineer.toLabel}: {task.assignedTo?.fullName || task.assignedTo?.username || t.engineer.unassigned}
                                             </span>
                                             {task.dueDate && (
-                                                <span className="text-xs text-gray-400">• Due: {new Date(task.dueDate).toLocaleDateString()}</span>
+                                                <span className="text-xs text-gray-400">• {t.engineer.dueLabel}: {new Date(task.dueDate).toLocaleDateString()}</span>
                                             )}
                                         </div>
                                         {task.completionNote && (
@@ -306,10 +306,10 @@ const EngineerDashboard = () => {
                                     </div>
                                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColors[task.status]}`}>
-                                            {task.status.replace('_', ' ')}
+                                            {t.engineer.statusLabels[task.status] || task.status}
                                         </span>
                                         <span className={`text-xs px-2 py-0.5 rounded-full ${priorityColors[task.priority]}`}>
-                                            {task.priority}
+                                            {t.engineer.priorityLabels[task.priority] || task.priority}
                                         </span>
                                     </div>
                                 </div>
@@ -338,24 +338,24 @@ const EngineerDashboard = () => {
                                         {/* Farmer→Engineer communication flow */}
                                         <div className="flex flex-wrap items-center gap-2 mt-2">
                                             <span className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                                🔧 From: {rec.createdBy?.fullName || rec.createdBy?.username || 'Engineer'}
+                                                🔧 {t.engineer.fromLabel}: {rec.createdBy?.fullName || rec.createdBy?.username || t.roles.engineer}
                                             </span>
                                             {rec.targetFarmers?.length > 0 ? (
                                                 rec.targetFarmers.map(f => (
                                                     <span key={f._id} className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                                        🌱 To: {f.fullName || f.username}
+                                                        🌱 {t.engineer.toLabel}: {f.fullName || f.username}
                                                     </span>
                                                 ))
                                             ) : (
-                                                <span className="text-xs bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">📢 All Farmers</span>
+                                                <span className="text-xs bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">{t.engineer.allFarmers}</span>
                                             )}
                                             {rec.crop && (
-                                                <span className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">🌿 {rec.crop}</span>
+                                                <span className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">🌿 {t.cropNav[rec.crop] || rec.crop}</span>
                                             )}
                                         </div>
-                                        <span className="text-xs text-gray-400 mt-1 inline-block">{rec.acknowledged?.length || 0} acknowledged • {new Date(rec.createdAt).toLocaleDateString()}</span>
+                                        <span className="text-xs text-gray-400 mt-1 inline-block">{rec.acknowledged?.length || 0} {t.engineer.acknowledged} • {new Date(rec.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${priorityColors[rec.priority]}`}>{rec.priority}</span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${priorityColors[rec.priority]}`}>{t.engineer.priorityLabels[rec.priority] || rec.priority}</span>
                                 </div>
                             </div>
                         ))}
@@ -379,7 +379,7 @@ const EngineerDashboard = () => {
                                 <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{alert.message}</p>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.severity === 'Critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : alert.severity === 'Warning' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>{alert.severity}</span>
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.severity === 'Critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : alert.severity === 'Warning' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>{t.alerts.severityLevels[alert.severity] || alert.severity}</span>
                                 <span className="text-xs text-gray-400 w-16 text-right">{new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                         </div>
@@ -408,35 +408,35 @@ const EngineerDashboard = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.type}</label>
                                     <select className="input-field" value={taskForm.type} onChange={e => setTaskForm({ ...taskForm, type: e.target.value })}>
-                                        <option value="irrigation">💧 Irrigation</option>
-                                        <option value="fertilizer">🧪 Fertilizer</option>
-                                        <option value="inspection">🔍 Inspection</option>
-                                        <option value="maintenance">🔧 Maintenance</option>
-                                        <option value="custom">📋 Custom</option>
+                                        <option value="irrigation">{t.engineer.irrigation}</option>
+                                        <option value="fertilizer">{t.engineer.fertilizer}</option>
+                                        <option value="inspection">{t.engineer.inspection}</option>
+                                        <option value="maintenance">{t.engineer.maintenance}</option>
+                                        <option value="custom">{t.engineer.custom}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.priority}</label>
                                     <select className="input-field" value={taskForm.priority} onChange={e => setTaskForm({ ...taskForm, priority: e.target.value })}>
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                        <option value="urgent">Urgent</option>
+                                        <option value="low">{t.engineer.low}</option>
+                                        <option value="medium">{t.engineer.medium}</option>
+                                        <option value="high">{t.engineer.high}</option>
+                                        <option value="urgent">{t.engineer.urgent}</option>
                                     </select>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign to Farmer *</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.assignToFarmer} *</label>
                                     <select className="input-field" value={taskForm.assignedTo} onChange={e => setTaskForm({ ...taskForm, assignedTo: e.target.value })} required>
-                                        <option value="">Select farmer...</option>
+                                        <option value="">{t.engineer.selectFarmer}</option>
                                         {farmers.map(f => <option key={f._id} value={f._id}>{f.fullName || f.username}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.dueDate}</label>
                                     <input type="date" className="input-field" value={taskForm.dueDate} onChange={e => setTaskForm({ ...taskForm, dueDate: e.target.value })} />
                                 </div>
                             </div>
@@ -466,15 +466,15 @@ const EngineerDashboard = () => {
                                 </span>
                                 <span className="text-gray-400">→</span>
                                 <span className="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
-                                    🌱 {recForm.targetFarmer ? (farmers.find(f => f._id === recForm.targetFarmer)?.fullName || 'Selected Farmer') : 'All Farmers'}
+                                    🌱 {recForm.targetFarmer ? (farmers.find(f => f._id === recForm.targetFarmer)?.fullName || t.engineer.selectedFarmer) : t.engineer.allFarmers}
                                 </span>
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Recommendation for crop: <strong>{activeCrop}</strong></p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.engineer.recForCrop}: <strong>{t.cropNav[activeCrop] || activeCrop}</strong></p>
                         </div>
 
                         {sensorData && (
                             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 mb-4">
-                                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">📊 Current Sensor Readings (will be attached)</p>
+                                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">{t.engineer.currentSensorReadings}</p>
                                 <div className="flex gap-3 text-xs">
                                     <span className="text-red-500">🌡 {sensorData.temperature}°C</span>
                                     <span className="text-blue-500">💧 {sensorData.humidity}%</span>
@@ -485,47 +485,47 @@ const EngineerDashboard = () => {
                         )}
                         <form onSubmit={createRecommendation} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title *</label>
-                                <input className="input-field" value={recForm.title} onChange={e => setRecForm({ ...recForm, title: e.target.value })} required placeholder="e.g. Increase irrigation frequency" />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.recTitle} *</label>
+                                <input className="input-field" value={recForm.title} onChange={e => setRecForm({ ...recForm, title: e.target.value })} required placeholder={t.engineer.recTitlePlaceholder} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Details *</label>
-                                <textarea className="input-field" rows={3} value={recForm.content} onChange={e => setRecForm({ ...recForm, content: e.target.value })} required placeholder="Explain what should be done and why..." />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.recDetails} *</label>
+                                <textarea className="input-field" rows={3} value={recForm.content} onChange={e => setRecForm({ ...recForm, content: e.target.value })} required placeholder={t.engineer.recDetailsPlaceholder} />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Send To Farmer</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.sendToFarmer}</label>
                                     <select className="input-field" value={recForm.targetFarmer} onChange={e => setRecForm({ ...recForm, targetFarmer: e.target.value })}>
-                                        <option value="">📢 All Farmers</option>
+                                        <option value="">{t.engineer.allFarmers}</option>
                                         {farmers.map(f => <option key={f._id} value={f._id}>🌱 {f.fullName || f.username}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Based on Data From</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.basedOnDataFrom}</label>
                                     <select className="input-field" value={recForm.sourceFarmer} onChange={e => setRecForm({ ...recForm, sourceFarmer: e.target.value })}>
-                                        <option value="">General / System Data</option>
+                                        <option value="">{t.engineer.generalSystemData}</option>
                                         {farmers.map(f => <option key={f._id} value={f._id}>📊 {f.fullName || f.username}</option>)}
                                     </select>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.category}</label>
                                     <select className="input-field" value={recForm.category} onChange={e => setRecForm({ ...recForm, category: e.target.value })}>
-                                        <option value="irrigation">Irrigation</option>
-                                        <option value="fertilizer">Fertilizer</option>
-                                        <option value="pest_control">Pest Control</option>
-                                        <option value="harvesting">Harvesting</option>
-                                        <option value="soil">Soil Management</option>
-                                        <option value="general">General</option>
+                                        <option value="irrigation">{t.engineer.categoryLabels.irrigation}</option>
+                                        <option value="fertilizer">{t.engineer.categoryLabels.fertilizer}</option>
+                                        <option value="pest_control">{t.engineer.categoryLabels.pest_control}</option>
+                                        <option value="harvesting">{t.engineer.categoryLabels.harvesting}</option>
+                                        <option value="soil">{t.engineer.categoryLabels.soil}</option>
+                                        <option value="general">{t.engineer.categoryLabels.general}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.priority}</label>
                                     <select className="input-field" value={recForm.priority} onChange={e => setRecForm({ ...recForm, priority: e.target.value })}>
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
+                                        <option value="low">{t.engineer.low}</option>
+                                        <option value="medium">{t.engineer.medium}</option>
+                                        <option value="high">{t.engineer.high}</option>
                                     </select>
                                 </div>
                             </div>

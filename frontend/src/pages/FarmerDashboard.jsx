@@ -115,7 +115,7 @@ const FarmerDashboard = () => {
                 <h2 className="text-xl font-bold flex items-center gap-2">
                     {t.farmer.title}
                 </h2>
-                <p className="text-green-100 text-sm mt-1">{t.farmer.welcome}, {user?.fullName || user?.username} • {t.crop}: {activeCrop}</p>
+                <p className="text-green-100 text-sm mt-1">{t.farmer.welcome}, {user?.fullName || user?.username} • {t.crop}: {t.cropNav[activeCrop] || activeCrop}</p>
                 <div className="flex gap-4 mt-4">
                     <div className="bg-white/20 rounded-xl px-4 py-2">
                         <p className="text-2xl font-bold">{pendingTasks.length}</p>
@@ -184,7 +184,7 @@ const FarmerDashboard = () => {
                                         </div>
                                         <div className="flex flex-col items-end gap-2 flex-shrink-0">
                                             <span className={`text-xs px-2 py-0.5 rounded-full ${priorityColors[task.priority]}`}>
-                                                {task.priority}
+                                                {t.engineer.priorityLabels[task.priority] || task.priority}
                                             </span>
                                             {task.status === 'pending' && (
                                                 <button
@@ -255,7 +255,7 @@ const FarmerDashboard = () => {
                                                     <span className="opacity-60">({rec.createdBy?.role || 'engineer'})</span>
                                                 </span>
                                                 {rec.crop && (
-                                                    <span className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">🌿 {rec.crop}</span>
+                                                    <span className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">🌿 {t.cropNav[rec.crop] || rec.crop}</span>
                                                 )}
                                                 {rec.sourcefarmer && (
                                                     <span className="text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full">
@@ -270,7 +270,7 @@ const FarmerDashboard = () => {
                                         </div>
                                         <div className="flex flex-col items-end gap-2 flex-shrink-0">
                                             <span className={`text-xs px-2 py-0.5 rounded-full ${priorityColors[rec.priority]}`}>
-                                                {rec.priority}
+                                                {t.engineer.priorityLabels[rec.priority] || rec.priority}
                                             </span>
                                             {!isAcknowledged ? (
                                                 <button
