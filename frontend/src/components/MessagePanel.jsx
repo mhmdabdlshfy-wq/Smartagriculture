@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import { Send, MessageCircle, ChevronDown, User, Circle } from 'lucide-react';
 
@@ -9,6 +10,7 @@ import { Send, MessageCircle, ChevronDown, User, Circle } from 'lucide-react';
  */
 const MessagePanel = () => {
     const { user } = useAuth();
+    const { t, isRTL } = useLanguage();
     const [contacts, setContacts] = useState([]);
     const [activeContact, setActiveContact] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -99,7 +101,7 @@ const MessagePanel = () => {
                         <div className="flex items-center gap-2">
                             <MessageCircle size={18} className="text-white" />
                             <span className="text-white font-semibold text-sm">
-                                {activeContact ? (activeContact.fullName || activeContact.username) : 'Messages'}
+                                {activeContact ? (activeContact.fullName || activeContact.username) : t.messages.title}
                             </span>
                         </div>
                         <div className="flex items-center gap-1">
@@ -107,7 +109,7 @@ const MessagePanel = () => {
                                 <button
                                     onClick={() => setActiveContact(null)}
                                     className="text-white/70 hover:text-white p-1 rounded transition"
-                                    title="Back to contacts"
+                                    title={t.messages.backToContacts}
                                 >
                                     <ChevronDown size={16} className="rotate-90" />
                                 </button>
@@ -128,7 +130,7 @@ const MessagePanel = () => {
                             {contacts.length === 0 ? (
                                 <div className="p-6 text-center text-gray-400 text-sm">
                                     <User size={32} className="mx-auto mb-2 opacity-30" />
-                                    No contacts available
+                                    {t.messages.noContacts}
                                 </div>
                             ) : (
                                 contacts.map(contact => (
@@ -138,8 +140,8 @@ const MessagePanel = () => {
                                         className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition border-b border-gray-100 dark:border-gray-700/50"
                                     >
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm ${contact.role === 'engineer'
-                                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
-                                                : 'bg-gradient-to-br from-green-500 to-emerald-600'
+                                            ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                                            : 'bg-gradient-to-br from-green-500 to-emerald-600'
                                             }`}>
                                             {(contact.fullName || contact.username).charAt(0).toUpperCase()}
                                         </div>
@@ -164,7 +166,7 @@ const MessagePanel = () => {
                             <div className="flex-1 overflow-y-auto p-3 space-y-2">
                                 {messages.length === 0 && (
                                     <p className="text-center text-gray-400 text-sm mt-8">
-                                        No messages yet. Say hello! 👋
+                                        {t.messages.noMessages}
                                     </p>
                                 )}
                                 {messages.map((msg, idx) => {
@@ -172,8 +174,8 @@ const MessagePanel = () => {
                                     return (
                                         <div key={msg._id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-[75%] px-3.5 py-2 rounded-2xl text-sm ${isMe
-                                                    ? 'bg-primary text-white rounded-br-md'
-                                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-md'
+                                                ? 'bg-primary text-white rounded-br-md'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-md'
                                                 }`}>
                                                 <p className="break-words">{msg.content}</p>
                                                 <p className={`text-[10px] mt-1 ${isMe ? 'text-white/60' : 'text-gray-400'}`}>
@@ -192,7 +194,7 @@ const MessagePanel = () => {
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Type a message..."
+                                    placeholder={t.messages.typePlaceholder}
                                     className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl text-sm border-none focus:ring-1 focus:ring-primary outline-none"
                                 />
                                 <button

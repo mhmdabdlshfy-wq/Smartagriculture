@@ -1,17 +1,20 @@
 import React from 'react';
 import { Shield, Flame, Droplets, Bug } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * RiskPanel - Displays disease, heat, and water stress probabilities
  * All values are mathematically computed on the backend.
  */
 const RiskPanel = ({ risks }) => {
+    const { t } = useLanguage();
+
     if (!risks) return null;
 
     const riskItems = [
-        { key: 'disease', label: 'Disease Risk', icon: Bug, color: '#8b5cf6', value: risks.disease },
-        { key: 'heat', label: 'Heat Stress', icon: Flame, color: '#ef4444', value: risks.heat },
-        { key: 'water', label: 'Water Stress', icon: Droplets, color: '#3b82f6', value: risks.water },
+        { key: 'disease', label: t.riskPanel.diseaseRisk, icon: Bug, color: '#8b5cf6', value: risks.disease },
+        { key: 'heat', label: t.riskPanel.heatStress, icon: Flame, color: '#ef4444', value: risks.heat },
+        { key: 'water', label: t.riskPanel.waterStress, icon: Droplets, color: '#3b82f6', value: risks.water },
     ];
 
     const getBarColor = (value) => {
@@ -34,7 +37,7 @@ const RiskPanel = ({ risks }) => {
                 <div className="flex items-center gap-2">
                     <Shield className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Risk Assessment
+                        {t.riskPanel.riskAssessment}
                     </h3>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${overallColor[risks.overall] || overallColor.Low}`}>

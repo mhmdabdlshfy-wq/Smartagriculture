@@ -11,6 +11,7 @@ import {
     Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useLanguage } from '../context/LanguageContext';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -22,6 +23,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
  *   - prediction: { values, labels, confidence, trend } | null
  */
 const LiveChart = ({ title, data, labels, color = '#2e7d32', min, max, prediction }) => {
+    const { t } = useLanguage();
     const datasets = [
         {
             label: title,
@@ -59,7 +61,7 @@ const LiveChart = ({ title, data, labels, color = '#2e7d32', min, max, predictio
         predData.push(...prediction.values);
 
         datasets.push({
-            label: `Forecast (${prediction.confidence || 0}% conf.)`,
+            label: `${t.liveChart.forecast} (${prediction.confidence || 0}% ${t.liveChart.confidence})`,
             data: predData,
             borderColor: color,
             borderWidth: 2,

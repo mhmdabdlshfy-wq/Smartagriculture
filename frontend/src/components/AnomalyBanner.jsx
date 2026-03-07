@@ -1,11 +1,14 @@
 import React from 'react';
 import { AlertTriangle, Zap, Radio, TrendingUp } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * AnomalyBanner - Shows detected anomalies in a compact banner.
  * Anomalies are detected via z-score and spike detection algorithms.
  */
 const AnomalyBanner = ({ anomalies }) => {
+    const { t } = useLanguage();
+
     if (!anomalies || anomalies.length === 0) return null;
 
     const icons = {
@@ -32,12 +35,12 @@ const AnomalyBanner = ({ anomalies }) => {
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{a.message}</p>
                             <p className="text-xs text-gray-400 mt-0.5">
-                                {a.type.toUpperCase()} • {a.metric}
+                                {t.alerts.anomalyTypes[a.type] || a.type.toUpperCase()} • {a.metric}
                             </p>
                         </div>
                         <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-bold ${a.severity === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
                             }`}>
-                            {a.severity}
+                            {t.alerts.severityLevels[a.severity] || a.severity}
                         </span>
                     </div>
                 );

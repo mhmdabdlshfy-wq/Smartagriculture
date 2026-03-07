@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import api from '../services/api';
 import { useSensor } from '../context/SensorContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Droplets, CloudRain, Sun, Timer, Gauge, Zap, TrendingDown } from 'lucide-react';
 
-/**
- * Smart Irrigation Panel - Now with evaporation estimation,
- * efficiency metrics, and trend analysis.
- */
 const IrrigationPanel = () => {
     const { activeCrop, sensorData } = useSensor();
+    const { t } = useLanguage();
     const [recommendation, setRecommendation] = useState(null);
     const [loading, setLoading] = useState(false);
     const [simulating, setSimulating] = useState(false);
@@ -60,8 +58,8 @@ const IrrigationPanel = () => {
                     <Droplets className="text-blue-600 w-6 h-6" />
                 </div>
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Smart Irrigation</h3>
-                    <p className="text-xs text-gray-400">AI-powered recommendation engine</p>
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t.irrigation.title}</h3>
+                    <p className="text-xs text-gray-400">{t.irrigation.subtitle}</p>
                 </div>
             </div>
 
@@ -72,45 +70,42 @@ const IrrigationPanel = () => {
                 </div>
             ) : recommendation ? (
                 <div className="space-y-4">
-                    {/* Main Recommendation */}
                     <div className={`p-4 rounded-xl border ${urgencyBg[recommendation.urgency] || ''} border-blue-100 dark:border-gray-700`}>
                         <p className="text-gray-700 dark:text-gray-300 font-medium text-sm leading-relaxed">
                             {recommendation.recommendation}
                         </p>
                     </div>
 
-                    {/* KPI Metrics Row */}
                     <div className="grid grid-cols-3 gap-3">
                         {recommendation.duration > 0 && (
                             <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                                 <Timer className="w-4 h-4 mx-auto text-blue-500 mb-1" />
                                 <p className="text-lg font-bold text-gray-800 dark:text-white">{recommendation.duration}</p>
-                                <p className="text-xs text-gray-400">min</p>
+                                <p className="text-xs text-gray-400">{t.irrigation.min}</p>
                             </div>
                         )}
                         {recommendation.efficiency > 0 && (
                             <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                                 <Gauge className="w-4 h-4 mx-auto text-green-500 mb-1" />
                                 <p className="text-lg font-bold text-gray-800 dark:text-white">{recommendation.efficiency}%</p>
-                                <p className="text-xs text-gray-400">efficiency</p>
+                                <p className="text-xs text-gray-400">{t.irrigation.efficiency}</p>
                             </div>
                         )}
                         {recommendation.evaporationRate !== undefined && (
                             <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                                 <TrendingDown className="w-4 h-4 mx-auto text-orange-500 mb-1" />
                                 <p className="text-lg font-bold text-gray-800 dark:text-white">{recommendation.evaporationRate}</p>
-                                <p className="text-xs text-gray-400">evap rate</p>
+                                <p className="text-xs text-gray-400">{t.irrigation.evapRate}</p>
                             </div>
                         )}
                     </div>
 
-                    {/* Urgency Badge */}
                     {recommendation.urgency && recommendation.urgency !== 'None' && (
                         <div className={`flex items-center gap-2 ${urgencyColors[recommendation.urgency]} font-semibold text-sm`}>
                             {recommendation.action === 'Irrigate' && <CloudRain size={18} />}
                             {recommendation.action === 'Mist' && <Sun size={18} />}
                             {recommendation.action === 'Drain' && <Droplets size={18} />}
-                            <span>Urgency: {recommendation.urgency}</span>
+                            <span>{t.irrigation.urgency}: {t.irrigation.urgencyLevels[recommendation.urgency] || recommendation.urgency}</span>
                         </div>
                     )}
                 </div>
@@ -127,9 +122,9 @@ const IrrigationPanel = () => {
             >
                 {simulating ? (
                     <span className="flex items-center justify-center gap-2">
-                        <Zap className="w-4 h-4 animate-spin" /> Simulating...
+                        <Zap className="w-4 h-4 animate-spin" /> {t.irrigation.simulating}
                     </span>
-                ) : 'Start Irrigation Simulation'}
+                ) : t.irrigation.startSimulation}
             </button>
         </div>
     );

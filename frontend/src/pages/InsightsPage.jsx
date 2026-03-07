@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSensor } from '../context/SensorContext';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import {
     BarChart3, TrendingUp, TrendingDown, Minus, Droplets, Thermometer,
@@ -8,6 +9,7 @@ import {
 
 const InsightsPage = () => {
     const { activeCrop, cropsConfig } = useSensor();
+    const { t } = useLanguage();
     const [insights, setInsights] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -88,9 +90,9 @@ const InsightsPage = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                         <BarChart3 className="w-7 h-7 text-primary" />
-                        Advanced Insights
+                        {t.insights.title}
                     </h1>
-                    <p className="text-sm text-gray-500 mt-1">7-day analytics and performance metrics for {activeCrop} {crop?.emoji}</p>
+                    <p className="text-sm text-gray-500 mt-1">{t.insights.subtitle} {t.cropNav[activeCrop] || activeCrop} {crop?.emoji}</p>
                 </div>
                 <div className="flex gap-2">
                     {['24h', '7d', '1m'].map(range => (
@@ -101,7 +103,7 @@ const InsightsPage = () => {
                                 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         >
                             <Download className="w-3.5 h-3.5" />
-                            Export {range}
+                            {t.insights.export} {range}
                         </button>
                     ))}
                 </div>
@@ -120,7 +122,7 @@ const InsightsPage = () => {
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 capitalize">
                                     {icon}
-                                    <span>{metric}</span>
+                                    <span>{t.sensors[metric] || metric}</span>
                                 </div>
                                 {trend && (
                                     <div className="flex items-center gap-1">
@@ -135,16 +137,16 @@ const InsightsPage = () => {
                             </div>
                             {comp && (
                                 <p className={`text-xs mt-2 font-medium ${comp.direction === 'up' ? 'text-red-500' :
-                                        comp.direction === 'down' ? 'text-blue-500' : 'text-gray-400'
+                                    comp.direction === 'down' ? 'text-blue-500' : 'text-gray-400'
                                     }`}>
                                     {comp.direction === 'up' ? '↑' : comp.direction === 'down' ? '↓' : '→'}
-                                    {' '}{Math.abs(comp.change)} {unit} vs last week ({comp.percentChange > 0 ? '+' : ''}{comp.percentChange}%)
+                                    {' '}{Math.abs(comp.change)} {unit} {t.insights.vsLastWeek} ({comp.percentChange > 0 ? '+' : ''}{comp.percentChange}%)
                                 </p>
                             )}
                             {/* Crop ideal reference */}
                             {crop && (
                                 <p className="text-xs text-gray-400 mt-1">
-                                    Ideal: {crop[metric === 'soilMoisture' ? 'moisture' : metric === 'ph' ? 'ph' : metric]?.ideal}{unit}
+                                    {t.insights.ideal}: {crop[metric === 'soilMoisture' ? 'moisture' : metric === 'ph' ? 'ph' : metric]?.ideal}{unit}
                                 </p>
                             )}
                         </div>
@@ -159,7 +161,7 @@ const InsightsPage = () => {
                     <div className="flex items-center gap-2 mb-4">
                         <Activity className="w-5 h-5 text-blue-500" />
                         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Environmental Stability
+                            {t.insights.envStability}
                         </h3>
                     </div>
                     <div className="flex items-center gap-4">
@@ -181,11 +183,11 @@ const InsightsPage = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                {current.stability >= 70 ? 'Conditions are stable and consistent' :
-                                    current.stability >= 40 ? 'Some fluctuations detected' :
-                                        'High variability in conditions'}
+                                {current.stability >= 70 ? t.insights.stableConditions :
+                                    current.stability >= 40 ? t.insights.someFluctuations :
+                                        t.insights.highVariability}
                             </p>
-                            <p className="text-xs text-gray-400 mt-1">{current.dataPoints || 0} data points analyzed</p>
+                            <p className="text-xs text-gray-400 mt-1">{current.dataPoints || 0} {t.insights.dataPoints}</p>
                         </div>
                     </div>
                 </div>
@@ -195,7 +197,7 @@ const InsightsPage = () => {
                     <div className="flex items-center gap-2 mb-4">
                         <Gauge className="w-5 h-5 text-green-500" />
                         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Growth Suitability
+                            {t.insights.growthSuitability}
                         </h3>
                     </div>
                     <div className="flex items-center gap-4">
@@ -217,11 +219,11 @@ const InsightsPage = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                {current.suitability >= 70 ? `Excellent conditions for ${activeCrop}` :
-                                    current.suitability >= 40 ? `Moderate suitability for ${activeCrop}` :
-                                        `Poor conditions for ${activeCrop}`}
+                                {current.suitability >= 70 ? `${t.insights.excellentConditions} ${t.cropNav[activeCrop] || activeCrop}` :
+                                    current.suitability >= 40 ? `${t.insights.moderateSuitability} ${t.cropNav[activeCrop] || activeCrop}` :
+                                        `${t.insights.poorConditions} ${t.cropNav[activeCrop] || activeCrop}`}
                             </p>
-                            <p className="text-xs text-gray-400 mt-1">Based on 7-day average readings</p>
+                            <p className="text-xs text-gray-400 mt-1">{t.insights.basedOn7Day}</p>
                         </div>
                     </div>
                 </div>
@@ -231,20 +233,20 @@ const InsightsPage = () => {
                     <div className="flex items-center gap-2 mb-4">
                         <Droplets className="w-5 h-5 text-cyan-500" />
                         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Water Usage Estimate
+                            {t.insights.waterUsage}
                         </h3>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="text-center">
                             <span className="text-3xl font-bold text-gray-800 dark:text-white">{current.waterUsage || 0}</span>
-                            <p className="text-xs text-gray-400">mm / week</p>
+                            <p className="text-xs text-gray-400">{t.insights.mmPerWeek}</p>
                         </div>
                         <div>
                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Estimated based on temperature, humidity, and {activeCrop} water needs
+                                {t.insights.estimatedBased} {t.cropNav[activeCrop] || activeCrop} {t.insights.waterNeeds}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
-                                Seasonal need: {crop?.waterNeed || '—'} mm total
+                                {t.insights.seasonalNeed}: {crop?.waterNeed || '—'} {t.insights.mmTotal}
                             </p>
                         </div>
                     </div>
@@ -257,18 +259,18 @@ const InsightsPage = () => {
                     <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                         <h3 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                             <Shield className="w-5 h-5 text-gray-500" />
-                            Weekly Variability Analysis
+                            {t.insights.weeklyVariability}
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50 dark:bg-gray-800/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Std Dev</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trend</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">vs Last Week</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.insights.metric}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.insights.average}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.insights.stdDev}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.insights.trend}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.insights.vsLastWeek}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -277,7 +279,7 @@ const InsightsPage = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300 capitalize">
                                                 {metricIcons[metric]}
-                                                {metric}
+                                                {t.sensors[metric] || metric}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-800 dark:text-white">
@@ -298,12 +300,12 @@ const InsightsPage = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {comparison[metric] ? (
                                                 <span className={`text-xs font-medium ${comparison[metric].direction === 'up' ? 'text-red-500' :
-                                                        comparison[metric].direction === 'down' ? 'text-blue-500' : 'text-gray-400'
+                                                    comparison[metric].direction === 'down' ? 'text-blue-500' : 'text-gray-400'
                                                     }`}>
                                                     {comparison[metric].change > 0 ? '+' : ''}{comparison[metric].change} ({comparison[metric].percentChange}%)
                                                 </span>
                                             ) : (
-                                                <span className="text-xs text-gray-400">No data</span>
+                                                <span className="text-xs text-gray-400">{t.noData}</span>
                                             )}
                                         </td>
                                     </tr>

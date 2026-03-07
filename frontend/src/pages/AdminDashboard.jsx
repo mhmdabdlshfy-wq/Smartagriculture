@@ -1,10 +1,9 @@
 import React from 'react';
 import { useSensor } from '../context/SensorContext';
+import { useLanguage } from '../context/LanguageContext';
 import SensorCard from '../components/SensorCard';
 import IrrigationPanel from '../components/IrrigationPanel';
 import LiveChart from '../components/LiveChart';
-import HealthGauge from '../components/HealthGauge';
-import RiskPanel from '../components/RiskPanel';
 import AnomalyBanner from '../components/AnomalyBanner';
 import AlertPopup from '../components/AlertPopup';
 import useIntelligence from '../hooks/useIntelligence';
@@ -16,7 +15,8 @@ import api from '../services/api';
  */
 const AdminDashboard = () => {
     const { sensorData, loading, alerts, activeCrop } = useSensor();
-    const { health, risks, predictions, anomalies } = useIntelligence(activeCrop);
+    const { predictions, anomalies } = useIntelligence(activeCrop);
+    const { t } = useLanguage();
     const [currentAlert, setCurrentAlert] = React.useState(null);
     const [timeRange, setTimeRange] = React.useState('24h');
     const [chartData, setChartData] = React.useState([]);
@@ -89,8 +89,8 @@ const AdminDashboard = () => {
 
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
                 <div>
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">⚙️ Admin Overview</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Full system monitoring & intelligence</p>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">⚙️ {t.nav.dashboard} - {t.roles.admin}</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">{t.engineer.subtitle}</p>
                 </div>
                 <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                     {ranges.map(range => (
@@ -112,26 +112,24 @@ const AdminDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <HealthGauge health={health} activeCrop={activeCrop} />
-                <RiskPanel risks={risks} />
                 <IrrigationPanel />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="card h-80"><LiveChart title={`Temperature (${timeRange})`} data={chartData.map(d => d.temperature)} labels={labels} color="#ef4444" min={0} max={60} prediction={timeRange === '24h' ? getPredictionData('temperature') : null} /></div>
-                <div className="card h-80"><LiveChart title={`Humidity (${timeRange})`} data={chartData.map(d => d.humidity)} labels={labels} color="#3b82f6" min={0} max={100} prediction={timeRange === '24h' ? getPredictionData('humidity') : null} /></div>
-                <div className="card h-80"><LiveChart title={`Soil pH (${timeRange})`} data={chartData.map(d => d.ph)} labels={labels} color="#8b5cf6" min={4} max={9} /></div>
-                <div className="card h-80"><LiveChart title={`Soil Moisture (${timeRange})`} data={chartData.map(d => d.soilMoisture)} labels={labels} color="#10b981" min={0} max={100} prediction={timeRange === '24h' ? getPredictionData('soilMoisture') : null} /></div>
+                <div className="card h-80"><LiveChart title={`${t.sensors.temperature} (${timeRange})`} data={chartData.map(d => d.temperature)} labels={labels} color="#ef4444" min={0} max={60} prediction={timeRange === '24h' ? getPredictionData('temperature') : null} /></div>
+                <div className="card h-80"><LiveChart title={`${t.sensors.humidity} (${timeRange})`} data={chartData.map(d => d.humidity)} labels={labels} color="#3b82f6" min={0} max={100} prediction={timeRange === '24h' ? getPredictionData('humidity') : null} /></div>
+                <div className="card h-80"><LiveChart title={`${t.sensors.ph} (${timeRange})`} data={chartData.map(d => d.ph)} labels={labels} color="#8b5cf6" min={4} max={9} /></div>
+                <div className="card h-80"><LiveChart title={`${t.sensors.soilMoisture} (${timeRange})`} data={chartData.map(d => d.soilMoisture)} labels={labels} color="#10b981" min={0} max={100} prediction={timeRange === '24h' ? getPredictionData('soilMoisture') : null} /></div>
             </div>
 
             <div className="card overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">Recent Alerts</h3>
-                    <span className="text-xs font-medium text-gray-400">{alerts.length} alerts</span>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">{t.engineer.recentAlerts}</h3>
+                    <span className="text-xs font-medium text-gray-400">{alerts.length} {t.engineer.alerts}</span>
                 </div>
                 <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-72 overflow-y-auto">
                     {alerts.length === 0 ? (
-                        <p className="p-6 text-gray-500 text-sm text-center">No recent alerts. All systems nominal.</p>
+                        <p className="p-6 text-gray-500 text-sm text-center">{t.engineer.noAlerts}</p>
                     ) : alerts.map((alert, idx) => (
                         <div key={idx} className="px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
                             <div className="flex items-center gap-3 min-w-0">

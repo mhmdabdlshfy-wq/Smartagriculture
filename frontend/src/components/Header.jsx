@@ -1,23 +1,25 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSensor } from '../context/SensorContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LogOut, Leaf, Sun, Moon, Sprout, BarChart3, LayoutDashboard,
-    HardHat, Tractor, ChevronDown
+    HardHat, Tractor, ChevronDown, Bug, Languages
 } from 'lucide-react';
 
 const CROP_NAV = [
-    { key: 'Wheat', emoji: '🌾', label: 'Wheat' },
-    { key: 'Rice', emoji: '🍚', label: 'Rice' },
-    { key: 'Tomato', emoji: '🍅', label: 'Tomato' },
-    { key: 'Potato', emoji: '🥔', label: 'Potato' },
-    { key: 'Strawberry', emoji: '🍓', label: 'Strawberry' },
+    { key: 'Wheat', emoji: '🌾' },
+    { key: 'Rice', emoji: '🍚' },
+    { key: 'Tomato', emoji: '🍅' },
+    { key: 'Potato', emoji: '🥔' },
+    { key: 'Strawberry', emoji: '🍓' },
 ];
 
 const Header = () => {
     const { user, logout } = useAuth();
     const { activeCrop, setActiveCrop, cropsConfig } = useSensor();
+    const { t, lang, toggleLanguage, isRTL } = useLanguage();
     const [darkMode, setDarkMode] = useState(false);
     const [showCropMenu, setShowCropMenu] = useState(false);
     const cropMenuRef = useRef(null);
@@ -45,18 +47,19 @@ const Header = () => {
 
     // Navigation items
     const navItems = [
-        { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/', label: t.nav.dashboard, icon: LayoutDashboard },
+        { path: '/plant-diseases', label: t.nav.plantDiseases, icon: Bug },
     ];
 
     // Engineers get Insights page too
     if (user?.role === 'engineer') {
-        navItems.push({ path: '/insights', label: 'Insights', icon: BarChart3 });
+        navItems.push({ path: '/insights', label: t.nav.insights, icon: BarChart3 });
     }
 
     // Role badge
     const roleBadge = {
-        engineer: { icon: HardHat, label: 'Engineer', color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-        farmer: { icon: Tractor, label: 'Farmer', color: 'text-green-500 bg-green-50 dark:bg-green-900/20' }
+        engineer: { icon: HardHat, label: t.roles.engineer, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
+        farmer: { icon: Tractor, label: t.roles.farmer, color: 'text-green-500 bg-green-50 dark:bg-green-900/20' }
     };
     const badge = roleBadge[user?.role] || roleBadge.farmer;
     const RoleIcon = badge.icon;
@@ -72,8 +75,8 @@ const Header = () => {
                             <Leaf className="text-white w-5 h-5" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-none">AgriSmart</h1>
-                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Intelligence Platform</p>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-none">{t.appName}</h1>
+                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{t.appTagline}</p>
                         </div>
                     </div>
 
@@ -107,11 +110,11 @@ const Header = () => {
                                     }`}
                             >
                                 <Sprout className="w-4 h-4" />
-                                Crops
+                                {t.nav.crops}
                                 <ChevronDown size={12} className={`transition-transform duration-200 ${showCropMenu ? 'rotate-180' : ''}`} />
                             </button>
                             {showCropMenu && (
-                                <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1.5 z-50 animate-fade-in">
+                                <div className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1.5 z-50 animate-fade-in`}>
                                     {CROP_NAV.map(crop => (
                                         <button
                                             key={crop.key}
@@ -120,7 +123,7 @@ const Header = () => {
                                                 ${location.pathname === `/crop/${crop.key}` ? 'text-primary font-semibold bg-primary/5' : 'text-gray-700 dark:text-gray-300'}`}
                                         >
                                             <span className="text-base">{crop.emoji}</span>
-                                            {crop.label}
+                                            {t.cropNav[crop.key] || crop.key}
                                         </button>
                                     ))}
                                 </div>
@@ -143,18 +146,28 @@ const Header = () => {
                             >
                                 {Object.entries(cropsConfig).map(([key, crop]) => (
                                     <option key={key} value={key} className="dark:bg-gray-800">
-                                        {crop.emoji || ''} {key}
+                                        {crop.emoji || ''} {t.cropNav[key] || key}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     )}
 
+                    {/* Language Toggle */}
+                    <button
+                        onClick={toggleLanguage}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-all duration-200 text-xs font-semibold border border-gray-200 dark:border-gray-600"
+                        title={lang === 'en' ? 'التبديل للعربية' : 'Switch to English'}
+                    >
+                        <Languages size={15} />
+                        {lang === 'en' ? 'عربي' : 'EN'}
+                    </button>
+
                     {/* Dark Mode Toggle */}
                     <button
                         onClick={() => setDarkMode(!darkMode)}
                         className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-all duration-200"
-                        title="Toggle Theme"
+                        title={t.toggleTheme}
                     >
                         {darkMode ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
@@ -165,7 +178,7 @@ const Header = () => {
                             <div className={`p-1.5 rounded-lg ${badge.color}`}>
                                 <RoleIcon size={14} />
                             </div>
-                            <div className="text-right">
+                            <div className={isRTL ? 'text-left' : 'text-right'}>
                                 <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
                                     {user?.fullName || user?.username}
                                 </p>
@@ -175,7 +188,7 @@ const Header = () => {
                         <button
                             onClick={logout}
                             className="bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 p-2 rounded-xl transition-colors"
-                            title="Logout"
+                            title={t.logout}
                         >
                             <LogOut size={16} />
                         </button>

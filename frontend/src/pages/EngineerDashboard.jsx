@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSensor } from '../context/SensorContext';
+import { useLanguage } from '../context/LanguageContext';
 import useIntelligence from '../hooks/useIntelligence';
 import api from '../services/api';
 import SensorCard from '../components/SensorCard';
-import HealthGauge from '../components/HealthGauge';
-import RiskPanel from '../components/RiskPanel';
 import IrrigationPanel from '../components/IrrigationPanel';
 import AnomalyBanner from '../components/AnomalyBanner';
 import AlertPopup from '../components/AlertPopup';
@@ -18,7 +17,8 @@ import {
 const EngineerDashboard = () => {
     const { user } = useAuth();
     const { sensorData, loading, alerts, activeCrop } = useSensor();
-    const { health, risks, predictions, anomalies } = useIntelligence(activeCrop);
+    const { health, predictions, anomalies } = useIntelligence(activeCrop);
+    const { t } = useLanguage();
 
     const [currentAlert, setCurrentAlert] = useState(null);
 
@@ -187,16 +187,16 @@ const EngineerDashboard = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
                 <div>
                     <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        🔧 Engineer Control Center
+                        {t.engineer.title}
                     </h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Welcome, {user?.fullName || user?.username} — Full monitoring & management</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{t.engineer.welcome}, {user?.fullName || user?.username} — {t.engineer.subtitle}</p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => setShowRecForm(true)} className="btn btn-outline text-sm flex items-center gap-1.5">
-                        <Send size={14} /> Recommendation
+                        <Send size={14} /> {t.engineer.recommendation}
                     </button>
                     <button onClick={() => setShowTaskForm(true)} className="btn btn-primary text-sm flex items-center gap-1.5">
-                        <Plus size={14} /> Assign Task
+                        <Plus size={14} /> {t.engineer.assignTask}
                     </button>
                 </div>
             </div>
@@ -205,19 +205,19 @@ const EngineerDashboard = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="card !p-4 flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20"><ClipboardList className="w-5 h-5 text-blue-500" /></div>
-                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.total}</p><p className="text-xs text-gray-400">Total Tasks</p></div>
+                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.total}</p><p className="text-xs text-gray-400">{t.engineer.totalTasks}</p></div>
                 </div>
                 <div className="card !p-4 flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-yellow-50 dark:bg-yellow-900/20"><Clock className="w-5 h-5 text-yellow-500" /></div>
-                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.pending}</p><p className="text-xs text-gray-400">Pending</p></div>
+                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.pending}</p><p className="text-xs text-gray-400">{t.engineer.pending}</p></div>
                 </div>
                 <div className="card !p-4 flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20"><TrendingUp className="w-5 h-5 text-blue-500" /></div>
-                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.inProgress}</p><p className="text-xs text-gray-400">In Progress</p></div>
+                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.inProgress}</p><p className="text-xs text-gray-400">{t.engineer.inProgress}</p></div>
                 </div>
                 <div className="card !p-4 flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-green-50 dark:bg-green-900/20"><CheckCircle2 className="w-5 h-5 text-green-500" /></div>
-                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.completed}</p><p className="text-xs text-gray-400">Completed</p></div>
+                    <div><p className="text-2xl font-bold text-gray-900 dark:text-white">{taskStats.completed}</p><p className="text-xs text-gray-400">{t.engineer.completed}</p></div>
                 </div>
             </div>
 
@@ -229,16 +229,14 @@ const EngineerDashboard = () => {
                 <SensorCard type="soilMoisture" value={sensorData.soilMoisture} status={getStatus('soilMoisture', sensorData.soilMoisture)} lastUpdated={sensorData.createdAt} />
             </div>
 
-            {/* Intelligence Row */}
+            {/* Irrigation Panel */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <HealthGauge health={health} activeCrop={activeCrop} />
-                <RiskPanel risks={risks} />
                 <IrrigationPanel />
             </div>
 
             {/* ═══════ FULL CHARTS (same as admin) ═══════ */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
-                <h3 className="font-semibold text-gray-800 dark:text-white">📊 Sensor Trends & Analytics</h3>
+                <h3 className="font-semibold text-gray-800 dark:text-white">{t.engineer.sensorTrends}</h3>
                 <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                     {ranges.map(range => (
                         <button key={range} onClick={() => setTimeRange(range)}
@@ -275,13 +273,13 @@ const EngineerDashboard = () => {
                 <div className="card overflow-hidden !p-0">
                     <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                            <ClipboardList size={16} /> Assigned Tasks
+                            <ClipboardList size={16} /> {t.engineer.assignedTasks}
                         </h3>
-                        <span className="text-xs text-gray-400">{tasks.length} tasks</span>
+                        <span className="text-xs text-gray-400">{tasks.length} {t.engineer.tasks}</span>
                     </div>
                     <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-y-auto">
                         {tasks.length === 0 ? (
-                            <p className="p-6 text-gray-400 text-sm text-center">No tasks yet. Assign one to a farmer!</p>
+                            <p className="p-6 text-gray-400 text-sm text-center">{t.engineer.noTasks}</p>
                         ) : tasks.map(task => (
                             <div key={task._id} className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                                 <div className="flex items-start justify-between gap-2">
@@ -324,13 +322,13 @@ const EngineerDashboard = () => {
                 <div className="card overflow-hidden !p-0">
                     <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                            <Send size={16} /> Recommendations Sent
+                            <Send size={16} /> {t.engineer.recsSent}
                         </h3>
-                        <span className="text-xs text-gray-400">{recommendations.length} sent</span>
+                        <span className="text-xs text-gray-400">{recommendations.length} {t.engineer.sent}</span>
                     </div>
                     <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-y-auto">
                         {recommendations.length === 0 ? (
-                            <p className="p-6 text-gray-400 text-sm text-center">No recommendations yet.</p>
+                            <p className="p-6 text-gray-400 text-sm text-center">{t.engineer.noRecs}</p>
                         ) : recommendations.map(rec => (
                             <div key={rec._id} className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                                 <div className="flex items-start justify-between gap-2">
@@ -368,12 +366,12 @@ const EngineerDashboard = () => {
             {/* ═══════ ALERTS LOG (same as admin) ═══════ */}
             <div className="card overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">Recent Alerts</h3>
-                    <span className="text-xs font-medium text-gray-400">{alerts.length} alerts</span>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">{t.engineer.recentAlerts}</h3>
+                    <span className="text-xs font-medium text-gray-400">{alerts.length} {t.engineer.alerts}</span>
                 </div>
                 <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-72 overflow-y-auto">
                     {alerts.length === 0 ? (
-                        <p className="p-6 text-gray-500 text-sm text-center">No recent alerts. All systems nominal.</p>
+                        <p className="p-6 text-gray-500 text-sm text-center">{t.engineer.noAlerts}</p>
                     ) : alerts.map((alert, idx) => (
                         <div key={idx} className="px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
                             <div className="flex items-center gap-3 min-w-0">
@@ -396,16 +394,16 @@ const EngineerDashboard = () => {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-bounce-in">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-bold text-gray-800 dark:text-white">Assign New Task</h3>
+                            <h3 className="text-lg font-bold text-gray-800 dark:text-white">{t.engineer.assignNewTask}</h3>
                             <button onClick={() => setShowTaskForm(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
                         </div>
                         <form onSubmit={createTask} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Title *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.taskTitle} *</label>
                                 <input className="input-field" value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })} required />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.engineer.description}</label>
                                 <textarea className="input-field" rows={3} value={taskForm.description} onChange={e => setTaskForm({ ...taskForm, description: e.target.value })} />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
@@ -443,8 +441,8 @@ const EngineerDashboard = () => {
                                 </div>
                             </div>
                             <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowTaskForm(false)} className="btn btn-outline flex-1">Cancel</button>
-                                <button type="submit" className="btn btn-primary flex-1">Create Task</button>
+                                <button type="button" onClick={() => setShowTaskForm(false)} className="btn btn-outline flex-1">{t.cancel}</button>
+                                <button type="submit" className="btn btn-primary flex-1">{t.engineer.createTask}</button>
                             </div>
                         </form>
                     </div>
@@ -456,7 +454,7 @@ const EngineerDashboard = () => {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-bounce-in max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-bold text-gray-800 dark:text-white">New Recommendation</h3>
+                            <h3 className="text-lg font-bold text-gray-800 dark:text-white">{t.engineer.newRecommendation}</h3>
                             <button onClick={() => setShowRecForm(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
                         </div>
 
@@ -532,8 +530,8 @@ const EngineerDashboard = () => {
                                 </div>
                             </div>
                             <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowRecForm(false)} className="btn btn-outline flex-1">Cancel</button>
-                                <button type="submit" className="btn btn-primary flex-1">📨 Send Recommendation</button>
+                                <button type="button" onClick={() => setShowRecForm(false)} className="btn btn-outline flex-1">{t.cancel}</button>
+                                <button type="submit" className="btn btn-primary flex-1">{t.engineer.sendRecommendation}</button>
                             </div>
                         </form>
                     </div>

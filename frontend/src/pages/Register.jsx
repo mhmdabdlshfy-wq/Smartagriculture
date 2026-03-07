@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Leaf, HardHat, Tractor } from 'lucide-react';
+import { Leaf, HardHat, Tractor, Languages } from 'lucide-react';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -10,24 +11,25 @@ const Register = () => {
     const [role, setRole] = useState('');
     const [error, setError] = useState('');
     const { register } = useAuth();
+    const { t, lang, toggleLanguage } = useLanguage();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!role) { setError('Please select your role'); return; }
+        if (!role) { setError(t.auth.selectRoleError); return; }
         try {
-            const user = await register(username, password, role, fullName);
+            await register(username, password, role, fullName);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed');
+            setError(err.response?.data?.message || t.auth.registrationFailed);
         }
     };
 
     const roles = [
         {
             value: 'engineer',
-            label: 'Agricultural Engineer',
-            desc: 'Monitor, analyze & create recommendations',
+            label: t.auth.engineerRole,
+            desc: t.auth.engineerDesc,
             icon: HardHat,
             color: 'from-blue-500 to-indigo-600',
             border: 'border-blue-400',
@@ -35,8 +37,8 @@ const Register = () => {
         },
         {
             value: 'farmer',
-            label: 'Farmer',
-            desc: 'View tasks, execute & send feedback',
+            label: t.auth.farmerRole,
+            desc: t.auth.farmerDesc,
             icon: Tractor,
             color: 'from-green-500 to-emerald-600',
             border: 'border-green-400',
@@ -46,13 +48,22 @@ const Register = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-green-50/30 to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 p-4">
-            <div className="card w-full max-w-lg p-8 animate-fade-in">
+            <div className="card w-full max-w-lg p-8 animate-fade-in relative">
+                {/* Language Toggle */}
+                <button
+                    onClick={toggleLanguage}
+                    className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-all duration-200 text-xs font-semibold border border-gray-200 dark:border-gray-600"
+                >
+                    <Languages size={15} />
+                    {lang === 'en' ? 'عربي' : 'EN'}
+                </button>
+
                 <div className="text-center mb-8">
                     <div className="bg-gradient-to-br from-green-500 to-emerald-600 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                         <Leaf className="w-7 h-7 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Join AgriSmart</h2>
-                    <p className="text-sm text-gray-500 mt-1">Create your account to get started</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t.auth.joinAgriSmart}</h2>
+                    <p className="text-sm text-gray-500 mt-1">{t.auth.createAccountSubtitle}</p>
                 </div>
 
                 {error && (
@@ -63,7 +74,7 @@ const Register = () => {
 
                 {/* Role Selection */}
                 <div className="mb-6">
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Select your role</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t.auth.selectRole}</label>
                     <div className="grid grid-cols-2 gap-3">
                         {roles.map(r => {
                             const Icon = r.icon;
@@ -94,17 +105,17 @@ const Register = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.auth.fullName}</label>
                         <input
                             type="text"
                             className="input-field"
-                            placeholder="e.g. Dr. Ahmed Hassan"
+                            placeholder={t.auth.fullNamePlaceholder}
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.auth.username}</label>
                         <input
                             type="text"
                             className="input-field"
@@ -114,7 +125,7 @@ const Register = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.auth.password}</label>
                         <input
                             type="password"
                             className="input-field"
@@ -124,17 +135,17 @@ const Register = () => {
                         />
                     </div>
                     <button type="submit" className="w-full btn btn-primary py-3 text-base">
-                        Create Account
+                        {t.auth.createAccount}
                     </button>
                 </form>
 
                 <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                    Already have an account? <Link to="/login" className="text-primary font-semibold hover:underline">Login here</Link>
+                    {t.auth.alreadyHaveAccount} <Link to="/login" className="text-primary font-semibold hover:underline">{t.auth.loginHere}</Link>
                 </p>
 
                 {/* Demo Accounts */}
                 <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <p className="text-xs text-gray-400 text-center mb-2">Demo accounts (password: 1234)</p>
+                    <p className="text-xs text-gray-400 text-center mb-2">{t.auth.demoAccounts}</p>
                     <div className="flex justify-center gap-3 text-xs">
                         <span className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg">🔧 engineer1</span>
                         <span className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg">🌱 farmer1</span>

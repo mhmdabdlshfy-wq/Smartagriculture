@@ -1,6 +1,7 @@
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
+import { useLanguage } from '../context/LanguageContext';
 
 ChartJS.register(ArcElement, Tooltip);
 
@@ -10,8 +11,9 @@ ChartJS.register(ArcElement, Tooltip);
  * Props: health = { overall, breakdown, category, color }
  */
 const HealthGauge = ({ health, activeCrop }) => {
+    const { t } = useLanguage();
     const score = health?.overall ?? 0;
-    const category = health?.category ?? 'Loading...';
+    const category = health?.category ?? t.loading;
 
     // Dynamic color based on score
     const getColor = (s) => {
@@ -48,14 +50,14 @@ const HealthGauge = ({ health, activeCrop }) => {
             <div className="absolute inset-0 opacity-5" style={{ background: `radial-gradient(circle at center, ${color}, transparent 70%)` }} />
 
             <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Crop Health Score
+                {t.healthGauge.cropHealthScore}
             </h3>
 
             <div className="w-40 h-40 relative">
                 <Doughnut data={data} options={options} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span className="text-3xl font-bold transition-all duration-500" style={{ color }}>{score}%</span>
-                    <span className="text-xs font-medium text-gray-500">{activeCrop}</span>
+                    <span className="text-xs font-medium text-gray-500">{t.cropNav[activeCrop] || activeCrop}</span>
                 </div>
             </div>
 
@@ -72,7 +74,7 @@ const HealthGauge = ({ health, activeCrop }) => {
                 <div className="w-full mt-4 space-y-2">
                     {Object.entries(breakdown).map(([key, val]) => (
                         <div key={key} className="flex items-center gap-2 text-xs">
-                            <span className="w-20 text-gray-500 dark:text-gray-400 capitalize truncate">{key}</span>
+                            <span className="w-20 text-gray-500 dark:text-gray-400 capitalize truncate">{t.sensors[key] || key}</span>
                             <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                                 <div
                                     className="h-full rounded-full transition-all duration-700"

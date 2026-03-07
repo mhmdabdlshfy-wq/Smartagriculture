@@ -1,6 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
-import { Thermometer, Droplets, FlaskConical, Sprout, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Thermometer, Droplets, FlaskConical, Sprout } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const icons = {
     temperature: Thermometer,
@@ -16,13 +17,6 @@ const units = {
     soilMoisture: '%'
 };
 
-const labels = {
-    temperature: 'Temperature',
-    humidity: 'Humidity',
-    ph: 'Soil pH',
-    soilMoisture: 'Soil Moisture'
-};
-
 const iconColors = {
     temperature: 'text-red-500 bg-red-50 dark:bg-red-900/20',
     humidity: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20',
@@ -30,10 +24,17 @@ const iconColors = {
     soilMoisture: 'text-green-500 bg-green-50 dark:bg-green-900/20'
 };
 
-const SensorCard = ({ type, value, status, lastUpdated, trend }) => {
+const SensorCard = ({ type, value, status, lastUpdated }) => {
+    const { t } = useLanguage();
     const Icon = icons[type] || Thermometer;
     const unit = units[type] || '';
-    const label = labels[type] || type;
+    const label = t.sensors[type] || type;
+
+    const statusLabels = {
+        normal: t.sensors.normal,
+        warning: t.sensors.warning,
+        critical: t.sensors.critical,
+    };
 
     const statusStyles = {
         normal: 'border-l-green-500',
@@ -52,7 +53,6 @@ const SensorCard = ({ type, value, status, lastUpdated, trend }) => {
             "card relative overflow-hidden transition-all duration-300 border-l-4 group hover:shadow-lg",
             statusStyles[status]
         )}>
-            {/* Subtle gradient overlay for critical */}
             {status === 'critical' && (
                 <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-900/10 animate-pulse" />
             )}
@@ -66,7 +66,7 @@ const SensorCard = ({ type, value, status, lastUpdated, trend }) => {
                         <h3 className="font-semibold text-sm text-gray-600 dark:text-gray-300">{label}</h3>
                     </div>
                     <span className={clsx("px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide", statusBadge[status])}>
-                        {status}
+                        {statusLabels[status] || status}
                     </span>
                 </div>
 

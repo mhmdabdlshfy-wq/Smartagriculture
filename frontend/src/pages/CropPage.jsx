@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSensor } from '../context/SensorContext';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import {
     ArrowLeft, Thermometer, Droplets, FlaskConical, Sprout,
@@ -227,6 +228,7 @@ const CropPage = () => {
     const { cropName } = useParams();
     const navigate = useNavigate();
     const { sensorData, activeCrop } = useSensor();
+    const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState('overview');
     const [currentHealth, setCurrentHealth] = useState(null);
 
@@ -249,35 +251,35 @@ const CropPage = () => {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center animate-fade-in">
                 <div className="text-6xl mb-4">🌱</div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Crop Not Found</h2>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">The crop "{cropName}" is not in our database.</p>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">{t.cropPage.cropNotFound}</h2>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">"{cropName}" {t.cropPage.cropNotFoundDesc}</p>
                 <button onClick={() => navigate('/')} className="btn btn-primary flex items-center gap-2">
-                    <ArrowLeft size={16} /> Back to Dashboard
+                    <ArrowLeft size={16} /> {t.cropPage.backToDashboard}
                 </button>
             </div>
         );
     }
 
     const tabs = [
-        { id: 'overview', label: 'Overview', icon: Info },
-        { id: 'conditions', label: 'Growing Conditions', icon: Thermometer },
-        { id: 'stages', label: 'Growth Stages', icon: TrendingUp },
-        { id: 'challenges', label: 'Challenges', icon: AlertTriangle },
-        { id: 'practices', label: 'Best Practices', icon: CheckCircle2 }
+        { id: 'overview', label: t.cropPage.overview, icon: Info },
+        { id: 'conditions', label: t.cropPage.growingConditions, icon: Thermometer },
+        { id: 'stages', label: t.cropPage.growthStages, icon: TrendingUp },
+        { id: 'challenges', label: t.cropPage.challenges, icon: AlertTriangle },
+        { id: 'practices', label: t.cropPage.bestPractices, icon: CheckCircle2 }
     ];
 
     // Compare current readings against ideal for this crop
     const getParamStatus = (current, min, max, optimal) => {
-        if (current === undefined || current === null) return { status: 'unknown', label: 'No Data', color: 'gray' };
+        if (current === undefined || current === null) return { status: 'unknown', label: t.cropPage.unknown, color: 'gray' };
         if (current >= min && current <= max) {
             const dist = Math.abs(current - optimal);
             const range = (max - min) / 2;
-            if (dist < range * 0.3) return { status: 'ideal', label: 'Ideal', color: 'green' };
-            return { status: 'good', label: 'Good', color: 'blue' };
+            if (dist < range * 0.3) return { status: 'ideal', label: t.cropPage.ideal, color: 'green' };
+            return { status: 'good', label: t.cropPage.good, color: 'blue' };
         }
         const distFromRange = current < min ? min - current : current - max;
-        if (distFromRange < 5) return { status: 'warning', label: 'Warning', color: 'orange' };
-        return { status: 'critical', label: 'Critical', color: 'red' };
+        if (distFromRange < 5) return { status: 'warning', label: t.sensors.warning, color: 'orange' };
+        return { status: 'critical', label: t.sensors.critical, color: 'red' };
     };
 
     const statusColors = {
@@ -305,9 +307,9 @@ const CropPage = () => {
         return (
             <div className="relative mt-4">
                 <div className="text-xs text-gray-400 flex justify-between mb-1">
-                    <span>0 (Acid)</span>
-                    <span>7 (Neutral)</span>
-                    <span>14 (Alkaline)</span>
+                    <span>0 ({t.cropPage.acid})</span>
+                    <span>7 ({t.cropPage.neutral})</span>
+                    <span>14 ({t.cropPage.alkaline}))</span>
                 </div>
                 <div className="h-4 rounded-full bg-gradient-to-r from-red-400 via-green-400 to-blue-400 relative overflow-visible">
                     {/* Ideal range overlay */}
@@ -331,9 +333,9 @@ const CropPage = () => {
                     )}
                 </div>
                 <div className="flex justify-between mt-2 text-xs">
-                    <span className="text-gray-400">Min: {crop.ph.min}</span>
-                    <span className="font-bold text-green-600 dark:text-green-400">Optimal: {crop.ph.optimal}</span>
-                    <span className="text-gray-400">Max: {crop.ph.max}</span>
+                    <span className="text-gray-400">{t.cropPage.min}: {crop.ph.min}</span>
+                    <span className="font-bold text-green-600 dark:text-green-400">{t.cropPage.optimal}: {crop.ph.optimal}</span>
+                    <span className="text-gray-400">{t.cropPage.max}: {crop.ph.max}</span>
                 </div>
             </div>
         );
@@ -350,7 +352,7 @@ const CropPage = () => {
                         onClick={() => navigate('/')}
                         className="flex items-center gap-1 text-white/80 hover:text-white text-sm mb-4 transition-colors"
                     >
-                        <ArrowLeft size={16} /> Back to Dashboard
+                        <ArrowLeft size={16} /> {t.cropPage.backToDashboard}
                     </button>
                     <div className="flex items-start justify-between">
                         <div>
@@ -367,7 +369,7 @@ const CropPage = () => {
                         {currentHealth && (
                             <div className="hidden md:flex flex-col items-center bg-white/15 backdrop-blur-sm rounded-2xl p-4 min-w-[120px]">
                                 <p className="text-4xl font-extrabold">{currentHealth.overall}%</p>
-                                <p className="text-xs text-white/75 mt-1">Health Score</p>
+                                <p className="text-xs text-white/75 mt-1">{t.cropPage.healthScore}</p>
                                 <p className="text-xs text-white/60 mt-0.5 capitalize">{currentHealth.category}</p>
                             </div>
                         )}
@@ -406,19 +408,19 @@ const CropPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="card !p-4">
                             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                <CloudRain size={14} /> Water Requirement
+                                <CloudRain size={14} /> {t.cropPage.waterRequirement}
                             </div>
                             <p className="text-lg font-bold text-gray-800 dark:text-white">{crop.waterNeed}</p>
                         </div>
                         <div className="card !p-4">
                             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                <Sun size={14} /> Growing Season
+                                <Sun size={14} /> {t.cropPage.growingSeason}
                             </div>
                             <p className="text-lg font-bold text-gray-800 dark:text-white">{crop.growingSeason}</p>
                         </div>
                         <div className="card !p-4">
                             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                <Leaf size={14} /> Soil Type
+                                <Leaf size={14} /> {t.cropPage.soilType}
                             </div>
                             <p className="text-lg font-bold text-gray-800 dark:text-white">{crop.soilType}</p>
                         </div>
@@ -428,14 +430,14 @@ const CropPage = () => {
                     {sensorData && (
                         <div className="card">
                             <h3 className="font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                                <BarChart3 size={16} /> Current Readings vs. {crop.name} Ideal Ranges
+                                <BarChart3 size={16} /> {t.cropPage.currentVsIdeal} {t.cropNav[crop.name] || crop.name} {t.cropPage.idealRanges}
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {[
-                                    { label: 'Temperature', icon: Thermometer, current: sensorData.temperature, ...crop.temperature, suffix: '°C', iconColor: 'text-red-500' },
-                                    { label: 'Humidity', icon: Droplets, current: sensorData.humidity, ...crop.humidity, suffix: '%', iconColor: 'text-blue-500' },
-                                    { label: 'Soil pH', icon: FlaskConical, current: sensorData.ph, ...crop.ph, suffix: '', iconColor: 'text-purple-500' },
-                                    { label: 'Soil Moisture', icon: Sprout, current: sensorData.soilMoisture, ...crop.soilMoisture, suffix: '%', iconColor: 'text-green-500' }
+                                    { label: t.sensors.temperature, icon: Thermometer, current: sensorData.temperature, ...crop.temperature, suffix: '°C', iconColor: 'text-red-500' },
+                                    { label: t.sensors.humidity, icon: Droplets, current: sensorData.humidity, ...crop.humidity, suffix: '%', iconColor: 'text-blue-500' },
+                                    { label: t.sensors.ph, icon: FlaskConical, current: sensorData.ph, ...crop.ph, suffix: '', iconColor: 'text-purple-500' },
+                                    { label: t.sensors.soilMoisture, icon: Sprout, current: sensorData.soilMoisture, ...crop.soilMoisture, suffix: '%', iconColor: 'text-green-500' }
                                 ].map(param => {
                                     const ParamIcon = param.icon;
                                     const status = getParamStatus(param.current, param.min, param.max, param.optimal);
@@ -446,7 +448,7 @@ const CropPage = () => {
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-800 dark:text-white">{param.label}</p>
                                                     <p className="text-xs text-gray-400">
-                                                        {param.min}–{param.max}{param.suffix} (optimal: {param.optimal}{param.suffix})
+                                                        {param.min}–{param.max}{param.suffix} ({t.cropPage.optimal}: {param.optimal}{param.suffix})
                                                     </p>
                                                 </div>
                                             </div>
@@ -468,7 +470,7 @@ const CropPage = () => {
                     {/* pH Detail Card */}
                     <div className="card">
                         <h3 className="font-semibold text-gray-800 dark:text-white mb-1 flex items-center gap-2">
-                            <FlaskConical size={16} className="text-purple-500" /> Soil pH Profile
+                            <FlaskConical size={16} className="text-purple-500" /> {t.cropPage.soilPhProfile}
                         </h3>
                         <p className="text-xs text-gray-400 mb-2">{crop.ph.tolerance}</p>
                         {renderPhScale()}
@@ -476,7 +478,7 @@ const CropPage = () => {
 
                     {/* Nutritional Info */}
                     <div className="card">
-                        <h3 className="font-semibold text-gray-800 dark:text-white mb-3">📊 Nutritional Content</h3>
+                        <h3 className="font-semibold text-gray-800 dark:text-white mb-3">{t.cropPage.nutritionalContent}</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {Object.entries(crop.nutritionalFacts).map(([key, value]) => (
                                 <div key={key} className="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-3 text-center">
@@ -493,10 +495,10 @@ const CropPage = () => {
             {activeTab === 'conditions' && (
                 <div className="space-y-5">
                     {[
-                        { label: 'Temperature', icon: Thermometer, data: crop.temperature, suffix: '°C', color: 'red', bgClass: 'from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10' },
-                        { label: 'Air Humidity', icon: Droplets, data: crop.humidity, suffix: '%', color: 'blue', bgClass: 'from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10' },
-                        { label: 'Soil pH', icon: FlaskConical, data: crop.ph, suffix: '', color: 'purple', bgClass: 'from-purple-50 to-fuchsia-50 dark:from-purple-900/10 dark:to-fuchsia-900/10' },
-                        { label: 'Soil Moisture', icon: Sprout, data: crop.soilMoisture, suffix: '%', color: 'green', bgClass: 'from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10' }
+                        { label: t.sensors.temperature, icon: Thermometer, data: crop.temperature, suffix: '°C', color: 'red', bgClass: 'from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10' },
+                        { label: t.cropPage.airHumidity, icon: Droplets, data: crop.humidity, suffix: '%', color: 'blue', bgClass: 'from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10' },
+                        { label: t.sensors.ph, icon: FlaskConical, data: crop.ph, suffix: '', color: 'purple', bgClass: 'from-purple-50 to-fuchsia-50 dark:from-purple-900/10 dark:to-fuchsia-900/10' },
+                        { label: t.sensors.soilMoisture, icon: Sprout, data: crop.soilMoisture, suffix: '%', color: 'green', bgClass: 'from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10' }
                     ].map(condition => {
                         const Icon = condition.icon;
                         const { min, max, optimal, note, tolerance } = condition.data;
@@ -518,15 +520,15 @@ const CropPage = () => {
                                 </div>
                                 <div className="grid grid-cols-3 gap-4 mb-3">
                                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-3 text-center">
-                                        <p className="text-xs text-gray-400">Minimum</p>
+                                        <p className="text-xs text-gray-400">{t.cropPage.minimum}</p>
                                         <p className="text-2xl font-extrabold text-gray-800 dark:text-white tabular-nums">{min}<span className="text-sm text-gray-400">{condition.suffix}</span></p>
                                     </div>
                                     <div className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-3 text-center border-2 border-green-300 dark:border-green-600">
-                                        <p className="text-xs text-green-600 dark:text-green-400 font-semibold">Optimal</p>
+                                        <p className="text-xs text-green-600 dark:text-green-400 font-semibold">{t.cropPage.optimal}</p>
                                         <p className="text-2xl font-extrabold text-green-700 dark:text-green-300 tabular-nums">{optimal}<span className="text-sm">{condition.suffix}</span></p>
                                     </div>
                                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-3 text-center">
-                                        <p className="text-xs text-gray-400">Maximum</p>
+                                        <p className="text-xs text-gray-400">{t.cropPage.maximum}</p>
                                         <p className="text-2xl font-extrabold text-gray-800 dark:text-white tabular-nums">{max}<span className="text-sm text-gray-400">{condition.suffix}</span></p>
                                     </div>
                                 </div>
@@ -547,7 +549,7 @@ const CropPage = () => {
             {activeTab === 'stages' && (
                 <div className="card">
                     <h3 className="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
-                        <TrendingUp size={16} /> Growth Stages of {crop.name}
+                        <TrendingUp size={16} /> {t.cropPage.growthStagesOf} {t.cropNav[crop.name] || crop.name}
                     </h3>
                     <div className="relative">
                         {/* Timeline line */}
@@ -562,7 +564,7 @@ const CropPage = () => {
                                         <div className="flex items-center justify-between mb-1">
                                             <h4 className="font-semibold text-gray-800 dark:text-white">{stage.name}</h4>
                                             <span className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full">
-                                                {stage.days} days
+                                                {stage.days} {t.days}
                                             </span>
                                         </div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">{stage.description}</p>
@@ -578,7 +580,7 @@ const CropPage = () => {
             {activeTab === 'challenges' && (
                 <div className="space-y-4">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Common challenges when growing {crop.name}, ordered by severity.
+                        {t.cropPage.challengesDesc} {t.cropNav[crop.name] || crop.name}{t.cropPage.orderedBySeverity}
                     </p>
                     {crop.challenges
                         .sort((a, b) => { const order = { high: 0, medium: 1, low: 2 }; return order[a.severity] - order[b.severity]; })
@@ -590,16 +592,16 @@ const CropPage = () => {
                                         {challenge.title}
                                     </h4>
                                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${challenge.severity === 'high' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                            : challenge.severity === 'medium' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                        : challenge.severity === 'medium' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                                         }`}>
-                                        {challenge.severity} risk
+                                        {challenge.severity} {t.risk}
                                     </span>
                                 </div>
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{challenge.description}</p>
                                 <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3">
                                     <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-1 flex items-center gap-1">
-                                        <CheckCircle2 size={12} /> Solution
+                                        <CheckCircle2 size={12} /> {t.cropPage.solution}
                                     </p>
                                     <p className="text-sm text-gray-700 dark:text-gray-300">{challenge.solution}</p>
                                 </div>
@@ -613,7 +615,7 @@ const CropPage = () => {
             {activeTab === 'practices' && (
                 <div className="card">
                     <h3 className="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
-                        <CheckCircle2 size={16} className="text-green-500" /> Best Practices for {crop.name}
+                        <CheckCircle2 size={16} className="text-green-500" /> {t.cropPage.bestPracticesFor} {t.cropNav[crop.name] || crop.name}
                     </h3>
                     <div className="space-y-3">
                         {crop.bestPractices.map((practice, idx) => (
