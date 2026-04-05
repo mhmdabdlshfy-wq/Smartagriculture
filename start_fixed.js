@@ -8,7 +8,7 @@ const LOGIN_URL = `http://localhost:${SERVER_PORT}/api/auth/login`;
 console.log('🚀 STARTING AUTOMATED FIX & LAUNCHER...');
 
 // 1. Start Server
-const serverProcess = spawn('node', ['backend/server.js'], {
+const serverProcess = spawn('node', ['back/server.js'], {
     stdio: 'pipe',
     shell: true,
     env: { ...process.env, PORT: SERVER_PORT } // Force port

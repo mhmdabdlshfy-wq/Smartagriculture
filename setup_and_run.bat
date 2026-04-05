@@ -5,13 +5,13 @@ echo ===========================================
 
 echo.
 echo [1/4] Installing Backend Dependencies...
-cd backend
+cd back
 call npm install
 cd ..
 
 echo.
 echo [2/4] Installing Frontend Dependencies...
-cd frontend
+cd front
 call npm install
 cd ..
 
@@ -22,8 +22,8 @@ echo If you haven't installed it, download from: https://www.mongodb.com/try/dow
 
 echo.
 echo [4/4] Starting the Application...
-start cmd /k "cd backend && npm run dev"
-start cmd /k "cd frontend && npm run dev"
+start cmd /k "cd back && npm run dev"
+start cmd /k "cd front && npm run dev"
 
 echo.
 echo Success! The Backend and Frontend are launching in new windows.
