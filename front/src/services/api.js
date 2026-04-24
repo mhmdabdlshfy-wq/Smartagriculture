@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: '/api', // Relative URL - works from any origin
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api', // Uses Vercel environment variable if available
 });
 
 // Add token to requests

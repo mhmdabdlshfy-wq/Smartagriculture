@@ -27,7 +27,8 @@ export const SensorProvider = ({ children }) => {
 
     // Socket connection + sensor data (runs once)
     useEffect(() => {
-        const newSocket = io(window.location.origin);
+        const backendUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+        const newSocket = io(backendUrl);
         setSocket(newSocket);
 
         const fetchSensorData = async () => {
